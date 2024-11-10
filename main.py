@@ -1,17 +1,24 @@
 import os
+
+import app
+
 os.system("pip freeze > requirements.txt")
 import subprocess
 import time
 import cv2
 import sqlite3
 import secrets
+import threading
+import asyncio
 from fastapi import FastAPI, Request, Form, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse, HTMLResponse, RedirectResponse, JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
 app.add_middleware(SessionMiddleware, secret_key="mysecretkey")
 templates = Jinja2Templates(directory="templates")
 
@@ -26,6 +33,8 @@ password = 'rubetek11'
 rtsp_url = f"rtsp://{username}:{password}@{ip}:8554/Streaming/Channels/101"
 
 ffmpeg_process = None
+streaming_active = False
+camera_check_task = None
 
 # Инициализация базы данных
 def init_db():
@@ -124,13 +133,46 @@ async def register(username: str = Form(...), password: str = Form(...)):
     return RedirectResponse("/login", status_code=302)
 
 
+# Проверка доступности камеры
+def check_camera_availability():
+    try:
+        print("Проверка доступности камеры с помощью ffmpeg...")
+        result = subprocess.run(
+            [
+                'ffmpeg',
+                '-rtsp_transport', 'tcp',
+                '-i', rtsp_url,
+                '-t', '3',  # Проверка камеры в течение 3 секунд
+                '-f', 'null', '-'
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=5  # Таймаут в 5 секунд
+        )
+        if result.returncode != 0:
+            print("Камера недоступна. Остановка потока.")
+            return False
+        return True
+    except subprocess.TimeoutExpired:
+        print("Проверка камеры завершилась по таймауту. Камера недоступна.")
+        return False
 
 
-# Функции для работы с ffmpeg
 
-def start_ffmpeg():
-    global ffmpeg_process, audio_process
+
+
+# Функция для запуска ffmpeg
+async def start_ffmpeg():
+    global ffmpeg_process, streaming_active
+    print("Проверка доступности камеры...")
+
+    # Используем проверку доступности через ffmpeg
+    if not check_camera_availability():
+        stop_ffmpeg()
+        return
+
     if ffmpeg_process is None or ffmpeg_process.poll() is not None:
+        print("Запуск ffmpeg...")
         ffmpeg_process = subprocess.Popen([
             'ffmpeg',
             '-rtsp_transport', 'tcp',
@@ -145,39 +187,67 @@ def start_ffmpeg():
             '-q', '5',
             'udp://127.0.0.1:1234'
         ], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        streaming_active = True
+
 
 
 
 
 def stop_ffmpeg():
-    global ffmpeg_process
+    global ffmpeg_process, streaming_active
     if isinstance(ffmpeg_process, subprocess.Popen):
         try:
-            print("Попытка завершить процесс...")
+            print("Остановка ffmpeg...")
             ffmpeg_process.terminate()
             ffmpeg_process.wait(timeout=5)
         except Exception as e:
-            print(f"Ошибка при завершении процесса: {e}. Пробуем kill()")
+            print(f"Ошибка при завершении ffmpeg: {e}. Пробуем kill()")
             ffmpeg_process.kill()
         finally:
             ffmpeg_process = None
+            streaming_active = False
     else:
-        print("Процесс ffmpeg не был запущен или уже завершен.")
+        print("Процесс ffmpeg не был запущен.")
 
 
 async def video_stream(request: Request):
-    start_ffmpeg()
+    global streaming_active
+
+    if not streaming_active:
+        await start_ffmpeg()
+
+    if not streaming_active:
+        print("Поток не запущен, камера недоступна.")
+        response = (
+            "HTTP/1.1 503 Service Unavailable\r\n"
+            "Content-Type: text/html; charset=utf-8\r\n\r\n"
+            "<html><body><h1>501 Not Implemented: Camera stream is currently unavailable. Please try again later.</h1></body></html>"
+        ).encode("utf-8")
+        yield response
+        return
+
     cap = cv2.VideoCapture("udp://127.0.0.1:1234")
+
+    if not cap.isOpened():
+        print("Не удалось открыть поток видео. Остановка потока.")
+        stop_ffmpeg()
+        response = (
+            "HTTP/1.1 503 Service Unavailable\r\n"
+            "Content-Type: text/html; charset=utf-8\r\n\r\n"
+            "<html><body><h1>501 Not Implemented: Camera stream is currently unavailable. Please try again later.</h1></body></html>"
+        ).encode("utf-8")
+        yield response
+        return
 
     try:
         while True:
             if await request.is_disconnected():
-                print("Клиент отключился, останавливаем поток")
+                print("Пользователь покинул страницу, останавливаем поток.")
                 break
 
             ret, frame = cap.read()
             if not ret:
-                print("Не удалось получить кадр")
+                print("Не удалось получить кадр. Остановка потока.")
                 break
 
             ret, buffer = cv2.imencode('.jpg', frame)
@@ -187,13 +257,12 @@ async def video_stream(request: Request):
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
     except Exception as e:
-        print(f"Ошибка при обработке потока: {e}")
+        print(f"Ошибка при обработке видео потока: {e}")
 
     finally:
         cap.release()
         stop_ffmpeg()
-        print("Поток завершен")
-
+        print("Видео поток завершён.")
 
 
 
@@ -232,7 +301,8 @@ async def session_status(request: Request):
     if result is None or result[0] != token:
         return {"authenticated": False}
 
-    return {"authenticated": True}
+    return {"authenticated": True, "username": user}
+
 
 # ONVIF ссылки
 @app.get("/onvif")

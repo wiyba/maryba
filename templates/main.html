@@ -5,102 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Camera Portal</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Montserrat', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #1e1e1e;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-
-    .container {
-      width: 90vw;
-      height: 90vh;
-      max-width: 600px;
-      max-height: 600px;
-      background: linear-gradient(145deg, #2b2b2b, #1a1a1a);
-      border-radius: 20px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-
-    .title {
-      font-size: 32px;
-      color: #f0f0f0;
-      margin-bottom: 10px;
-    }
-
-    .text-field {
-      width: calc(100% - 40px);
-      height: 100%;
-      flex-grow: 1;
-      padding: 20px;
-      margin: 20px 0;
-      border-radius: 10px;
-      border: 1px solid #4CAF50;
-      background-color: #2b2b2b;
-      color: #f0f0f0;
-      font-size: 18px;
-      outline: none;
-      text-align: left;
-      resize: none;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-
-    .button-container {
-      display: flex;
-      gap: 20px;
-      align-items: center;
-      justify-content: center;
-      margin-top: 10px;
-    }
-
-    .round-button {
-      width: 60px;
-      height: 60px;
-      background-color: #4CAF50;
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-decoration: none;
-      transition: background-color 0.4s, transform 0.2s;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      cursor: pointer;
-    }
-
-    .round-button img {
-      width: 32px;
-      height: 32px;
-    }
-
-    .round-button:hover {
-      background-color: #313131;
-      transform: scale(1.1);
-    }
-  </style>
+  <link rel="stylesheet" href="/static/styles/main.css">
   <script>
     async function checkSession() {
       const response = await fetch('/session_status');
       const data = await response.json();
-      const loginButton = document.getElementById('login-button');
+      const loginLink = document.getElementById('login-link');
+      const usernameElement = document.getElementById('username');
+      const container = document.querySelector('.container');
 
       if (data.authenticated) {
-        loginButton.href = "/logout";
-        loginButton.innerHTML = `<img src="https://img.icons8.com/?size=100&id=105495&format=png&color=FFFFFF" alt="Logout Icon">`;
+        loginLink.href = "/logout";
+        loginLink.textContent = "Log out";
+        usernameElement.textContent = data.username;
+
+        loginLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          container.classList.add('fade-out');
+          setTimeout(() => {
+            window.location.href = loginLink.href;
+          }, 1000);
+        });
       } else {
-        loginButton.href = "/login";
-        loginButton.innerHTML = `<img src="https://img.icons8.com/?size=100&id=82786&format=png&color=FFFFFF" alt="Login Icon">`;
+        loginLink.href = "/login";
+        loginLink.textContent = "Log in";
+        usernameElement.textContent = "Guest";
       }
     }
 
@@ -109,18 +38,25 @@
 </head>
 <body>
   <div class="container">
-    <div class="title">Camera Portal</div>
-    <textarea class="text-field" readonly>
-Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repellat quas non velit itaque? Magni dolore autem, nihil numquam ut magnam fugiat, aperiam inventore fuga repellendus sed recusandae pariatur rem odit?
-    </textarea>
-    <div class="button-container">
-      <a id="login-button" class="round-button"></a>
-      <a href="./video" class="round-button">
-        <img src="https://img.icons8.com/?size=100&id=86821&format=png&color=FFFFFF" alt="Gallery Icon">
-      </a>
-      <a href="./onvif" class="round-button">
-        <img src="https://img.icons8.com/?size=100&id=104057&format=png&color=FFFFFF" alt="Camera Icon">
-      </a>
+    <div class="title-container">
+      <div class="title">Camera Portal</div>
+      <div class="user-info">
+        <div id="username" class="username">Guest</div>
+        <a id="login-link" class="login-link" href="#">Log in</a>
+      </div>
+    </div>
+    <textarea class="text-field" readonly>Camera Portal is a user-friendly platform designed for ONVIF-compatible cameras, providing a seamless way to manage and view your camera streams. It features an elegant and responsive interface, complete with a visually appealing video player to enhance your viewing experience. Users can easily register and manage their accounts, ensuring secure access to camera feeds. With well-crafted design elements and a focus on usability, this portal offers both a beautiful and efficient solution for camera monitoring.</textarea>
+    <div class="bottom-container">
+      <div class="left-buttons">
+        <a href="./video" class="round-button">
+          <img src="https://img.icons8.com/?size=100&id=86821&format=png&color=FFFFFF" alt="Gallery Icon">
+        </a>
+      </div>
+      <div class="right-buttons">
+        <a href="./onvif" class="round-button">
+          <img src="https://img.icons8.com/?size=100&id=104057&format=png&color=FFFFFF" alt="Camera Icon">
+        </a>
+      </div>
     </div>
   </div>
 </body>

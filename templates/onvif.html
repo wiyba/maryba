@@ -1,77 +1,30 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ONVIF Stream</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            display: flex;
-            height: 100vh;
-            font-family: 'Montserrat', sans-serif;
-            background-color: #000;
-            color: #fff;
-        }
-
-        .sidebar {
-            width: 200px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background-color: #333;
-            padding: 20px;
-        }
-
-        .button {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            background-color: #4CAF50;
-            color: white;
-            text-align: center;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .button:hover {
-            background-color: #313131;
-        }
-
-        .video-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding: 20px;
-        }
-
-        .video-stream {
-            max-width: 100%;
-            max-height: 100%;
-            width: auto;
-            height: auto;
-            object-fit: contain;
-            border: 2px solid #4CAF50;
-        }
-    </style>
+    <link rel="stylesheet" href="/static/styles/onvif.css">
 </head>
 <body>
-    <div class="sidebar">
-        <div class="button" onclick="alert('фвыжащлгфывпщзлодфывпд')">кнопка</div>
-        <div class="button" onclick="alert('фвыпфывп')">кнооопппка</div>
-        <a class="button" href="./logout">Logout</a>
-    </div>
     <div class="video-container">
-        <img class="video-stream" src="/onvif_source" alt="ONVIF Stream">
+        <img class="video-stream" src="/onvif_source" alt="ONVIF Stream" onerror="showError()">
+        <a href="./" class="home-button">
+            <img src="https://img.icons8.com/?size=100&id=1iF9PyJ2Thzo&format=png&color=FFFFFF" alt="Home Icon">
+        </a>
+        <div id="error-message" class="error-message" style="display: none;">
+            <h2>Error 501: Service Not Implemented</h2>
+        </div>
     </div>
+
+    <script>
+        function showError() {
+            const img = document.querySelector('.video-stream');
+            const errorMessage = document.getElementById('error-message');
+            img.style.display = 'none';
+            errorMessage.style.display = 'flex';
+        }
+    </script>
 </body>
 </html>
