@@ -1,6 +1,7 @@
+import os
+os.system("pip freeze > requirements.txt")
 import subprocess
 import time
-import os
 import cv2
 import sqlite3
 import secrets
@@ -8,7 +9,7 @@ from fastapi import FastAPI, Request, Form, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse, HTMLResponse, RedirectResponse, JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.templating import Jinja2Templates
-os.system("pip freeze > requirements.txt")
+
 
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key="mysecretkey")
