@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Log In</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/styles/users.css">
+    <link rel="stylesheet" href="/static/styles/login.css">
     <script>
         async function handleLogin(event) {
-            event.preventDefault(); // Предотвращаем отправку формы
+            event.preventDefault();
 
             const username = document.querySelector('input[name="username"]').value;
             const password = document.querySelector('input[name="password"]').value;
@@ -23,10 +23,10 @@
                 });
 
                 if (response.ok) {
-                    window.location.href = "/"; // Перенаправление на главную страницу при успешной авторизации
+                    window.location.href = "/";
                 } else {
                     const errorData = await response.json();
-                    alert(errorData.detail); // Выводим сообщение об ошибке
+                    alert(errorData.detail);
                 }
             } catch (error) {
                 console.error("Ошибка при попытке входа:", error);
@@ -38,14 +38,16 @@
     <div class="container">
         <div class="title-container">
             <div class="title">Sign In</div>
-            <a href="/" class="home-button">Home</a>
+            <a href="/register" class="home-button">Sign up</a>
         </div>
         <form onsubmit="handleLogin(event)">
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
             <div class="button-container">
-                <a href="/register" class="register-button">+</a>
-                <a href="#" onclick="handleLogin(event)" class="custom-button">></a>
+                <a href="./" class="custom-button icon-button">
+                    <img src="https://img.icons8.com/?size=100&id=1iF9PyJ2Thzo&format=png&color=FFFFFF" alt="Icon" class="icon-image">
+                </a>
+                <a href="#" onclick="handleLogin(event)" class="custom-button submit-button">></a>
             </div>
         </form>
     </div>

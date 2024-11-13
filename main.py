@@ -1,7 +1,5 @@
 import os
-
 import app
-
 os.system("pip freeze > requirements.txt")
 import subprocess
 import time
@@ -40,23 +38,41 @@ camera_check_task = None
 def init_db():
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
+
+    # Создаем таблицу пользователей с автоинкрементом ID без использования AUTOINCREMENT
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id INTEGER PRIMARY KEY,
         username TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL
     )
     """)
+
+    # Создаем таблицу сессий
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS sessions (
         username TEXT PRIMARY KEY,
         session_token TEXT NOT NULL
     )
     """)
+
+    # Создаем таблицу камер с полями для IP, логина и пароля
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS cameras (
+        id INTEGER PRIMARY KEY,
+        username TEXT NOT NULL,
+        ip TEXT NOT NULL,
+        login TEXT NOT NULL,
+        password TEXT NOT NULL,
+        FOREIGN KEY (username) REFERENCES users(username)
+    )
+    """)
+
     conn.commit()
     conn.close()
 
 init_db()
+
 
 # Проверка авторизации
 def get_current_user(request: Request):
