@@ -26,7 +26,7 @@ app.add_middleware( # type: ignore
 )
 templates = Jinja2Templates(directory="templates")
 
-VIDEO_PATH = os.path.join("static/images/videos", "video.mp4")
+VIDEO_PATH = os.path.join("static/images/videos", "harehareukaidansu.mp4")
 PHOTO_PATH = os.path.join("templates/assets/photos", "image.jpg")
 DATABASE = "users.db"
 

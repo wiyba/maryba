@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
+    <link rel="icon" type="image/png" href="/static/images/plus.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -101,7 +102,13 @@
             gap: 20px;
         }
 
-        input {
+        .input-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .input-container input {
+            width: 100%;
             padding: 15px;
             font-size: 16px;
             border-radius: 10px;
@@ -110,15 +117,26 @@
             color: #f0f0f0;
             outline: none;
             transition: background-color 0.4s, border-color 0.4s;
+            box-sizing: border-box;
         }
 
-        input::placeholder {
+        .input-container input::placeholder {
             color: #7a7a7a;
         }
 
-        input:focus {
+        .input-container input:focus {
             background-color: #1a1a1a;
             border-color: #4CAF50;
+        }
+
+        .input-container::after {
+            content: attr(data-placeholder-right);
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #7a7a7a;
         }
 
         .icon-button {
@@ -150,14 +168,26 @@
             <a href="/login" class="log-button">Sign In</a>
         </div>
         <form>
-            <input type="text" name="username" placeholder="Username (4+ chars)" required>
-            <input type="password" name="password" placeholder="Password (8+ chars)" required>
+            <div class="input-container" data-placeholder-right="4-18 chars">
+                <input type="text" name="username" placeholder="Username" maxlength="18" pattern="\w+" title="Only letters, numbers, and underscores are allowed. No spaces." required>
+            </div>
+            <div class="input-container" data-placeholder-right="8-32 chars">
+                <input type="password" name="password" placeholder="Password" maxlength="32" pattern="\S+" title="No spaces are allowed." required>
+            </div>
             <div class="button-container">
-                <a href="/" class="custom-button" onclick="handleFadeOut(event)"><img src="/static/images/home.png" alt="Icon" class="icon-image"></a>
+                <a href="/" class="custom-button"><img src="/static/images/home.png" alt="Icon" class="icon-image"></a>
                 <a href="#" onclick="handleSignUp(event)" class="custom-button"><img src="/static/images/plus.png" alt="Icon" class="icon-image"></a>
             </div>
         </form>
     </div>
+    <script>
+        // JavaScript для удаления всех символов, кроме разрешенных
+        document.querySelectorAll('input[name="username"], input[name="password"]').forEach(input => {
+            input.addEventListener('input', () => {
+                input.value = input.value.replace(/[^A-Za-zА-Яа-я0-9_]/g, '');
+            });
+        });
+    </script>
     <script src="/static/js/register-validation.js"></script>
 </body>
 </html>
