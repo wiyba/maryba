@@ -25,28 +25,6 @@
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
             padding: 30px;
             box-sizing: border-box;
-            animation: fadeIn 1.5s ease-in-out forwards;
-            opacity: 0;
-        }
-
-        @keyframes fadeIn {
-            0% { opacity: 0; transform: translateY(20px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeOut {
-            0% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-        }
-
-        :target ~ .container {
-            animation: fadeOut 1s ease-in-out forwards;
-            pointer-events: none;
         }
 
         .title-container {
@@ -164,44 +142,6 @@
             height: 30px;
         }
     </style>
-    <script>
-        async function handleSignUp(event) {
-            event.preventDefault(); // Предотвращаем переход по ссылке
-
-            const username = document.querySelector('input[name="username"]').value;
-            const password = document.querySelector('input[name="password"]').value;
-
-            if (username.length < 4) {
-                alert('Username must be at least 4 characters long');
-                event.preventDefault();
-                return;
-            }
-            else if (password.length < 8) {
-                alert('Password must be at least 8 characters long');
-                event.preventDefault();
-                return;
-            }
-
-            try {
-                const response = await fetch('/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams({ username, password })
-                });
-
-                if (response.ok) {
-                    window.location.href = "/login"; // Перенаправление на страницу входа при успешной регистрации
-                } else {
-                    const errorData = await response.json();
-                    alert(errorData.detail); // Выводим сообщение об ошибке
-                }
-            } catch (error) {
-                console.error("Ошибка при регистрации:", error);
-            }
-        }
-    </script>
 </head>
 <body>
     <div class="container">
@@ -218,5 +158,6 @@
             </div>
         </form>
     </div>
+    <script src="/static/js/register-validation.js"></script>
 </body>
 </html>

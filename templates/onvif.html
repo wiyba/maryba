@@ -5,7 +5,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ONVIF Stream</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/styles/onvif.css">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1e1e1e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .video-container {
+            position: relative;
+            width: 90vw;
+            max-width: 1200px;
+            aspect-ratio: 16 / 9;
+            background: linear-gradient(145deg, #2b2b2b, #1a1a1a);
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            border: 2px solid #4CAF50;
+            overflow: hidden;
+        }
+
+        .video-stream {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 20px;
+        }
+
+        .error-message {
+            display: flex;
+            flex-direction: column; /* Расположить элементы (заголовки) вертикально друг под другом */
+            align-items: center;
+            justify-content: center;
+            color: #f0f0f0;
+            font-size: 18px; /* Можно сделать основной текст чуть меньше, если нужно */
+            text-align: center;
+            padding: 20px;
+            height: 100%;
+        }
+
+        .error-message h3 {
+            font-size: 36px; /* Увеличиваем размер для кода ошибки (404) */
+            font-weight: bold; /* Делаем более жирным, чтобы выделить */
+            margin: 0; /* Убираем отступы сверху и снизу */
+            color: #ff4d4d; /* Красный цвет для привлечения внимания к ошибке */
+        }
+
+        .error-message h2 {
+            font-size: 24px; /* Сделаем "Not Found" немного меньше */
+            font-weight: 600; /* Полужирный текст для меньшего акцента */
+            margin: 10px 0 0; /* Отступ сверху между h3 и h2 */
+            color: #ffffff; /* Белый цвет для хорошего контраста с фоном */
+        }
+
+        .home-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 50px;
+            height: 50px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .home-button:hover {
+            background-color: #313131;
+            transform: scale(1.1);
+        }
+
+        .home-button img {
+            width: 24px;
+            height: 24px;
+        }
+    </style>
 </head>
 <body>
     <div class="video-container">
@@ -14,17 +97,10 @@
             <img src="https://img.icons8.com/?size=100&id=1iF9PyJ2Thzo&format=png&color=FFFFFF" alt="Home Icon">
         </a>
         <div id="error-message" class="error-message" style="display: none;">
-            <h2>Error 501: Service Not Implemented</h2>
+            <h3>404</h3>
+            <h2>Not Found</h2>
         </div>
     </div>
-
-    <script>
-        function showError() {
-            const img = document.querySelector('.video-stream');
-            const errorMessage = document.getElementById('error-message');
-            img.style.display = 'none';
-            errorMessage.style.display = 'flex';
-        }
-    </script>
+    <script src="/static/js/onvif-handler.js"></script>
 </body>
 </html>

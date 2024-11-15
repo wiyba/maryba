@@ -7,7 +7,8 @@ import sqlite3
 import secrets
 import threading
 import asyncio
-from fastapi import FastAPI, Request, Form, HTTPException
+import bcrypt
+from fastapi import FastAPI, Request, Form, HTTPException, Depends
 from fastapi.responses import FileResponse, StreamingResponse, HTMLResponse, RedirectResponse, JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.templating import Jinja2Templates
@@ -16,18 +17,30 @@ from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
-app.add_middleware(SessionMiddleware, secret_key="mysecretkey")
+app.add_middleware( # type: ignore
+    SessionMiddleware,
+    secret_key=os.urandom(64),
+    session_cookie="my_session",
+    https_only=True,
+    same_site="strict"
+)
 templates = Jinja2Templates(directory="templates")
 
-VIDEO_PATH = os.path.join("static/videos", "video.mp4")
+VIDEO_PATH = os.path.join("static/images/videos", "video.mp4")
 PHOTO_PATH = os.path.join("templates/assets/photos", "image.jpg")
 DATABASE = "users.db"
 
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+def verify_password(password: str, hashed: str) -> bool:
+    return bcrypt.checkpw(password.encode(), hashed.encode())
+
 # Настройка ONVIF
 ip = '192.168.207.71'
-username = 'admin'
-password = 'rubetek11'
-rtsp_url = f"rtsp://{username}:{password}@{ip}:8554/Streaming/Channels/101"
+user = 'admin'
+passwd = 'rubetek11'
+rtsp_url = f"rtsp://{user}:{passwd}@{ip}:8554/Streaming/Channels/101"
 
 ffmpeg_process = None
 streaming_active = False
@@ -100,13 +113,21 @@ async def login_page(request: Request):
 async def login(request: Request, username: str = Form(...), password: str = Form(...)):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
-    user = cursor.fetchone()
+    # Извлекаем хешированный пароль из базы данных
+    cursor.execute("SELECT password FROM users WHERE username = ?", (username,))
+    result = cursor.fetchone()
 
-    if user is None:
+    if result is None:
         conn.close()
         raise HTTPException(status_code=401, detail="Неверный логин или пароль")
 
+    hashed_password = result[0]
+    # Проверяем введенный пароль с хешированным паролем из базы данных
+    if not verify_password(password, hashed_password):
+        conn.close()
+        raise HTTPException(status_code=401, detail="Неверный логин или пароль")
+
+    # Если проверка успешна, создаем сессионный токен
     session_token = secrets.token_urlsafe(16)
     cursor.execute("INSERT OR REPLACE INTO sessions (username, session_token) VALUES (?, ?)", (username, session_token))
     conn.commit()
@@ -138,19 +159,19 @@ async def register_page(request: Request):
 
 @app.post("/register")
 async def register(username: str = Form(...), password: str = Form(...)):
-    if len(password) < 8:
-        HTTPException(status_code=0, detail="Bad password")
-    if len(username) < 3:
-        HTTPException(status_code=0, detail="Bad username")
+    hashed_password = hash_password(password)
+
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
     try:
-        cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+        # Сохраняем пользователя с хешированным паролем
+        cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
         conn.commit()
     except sqlite3.IntegrityError:
         conn.close()
         raise HTTPException(status_code=400, detail="Пользователь уже существует")
     conn.close()
+
     return RedirectResponse("/login", status_code=302)
 
 
@@ -241,12 +262,6 @@ async def video_stream(request: Request):
 
     if not streaming_active:
         print("Поток не запущен, камера недоступна.")
-        response = (
-            "HTTP/1.1 503 Service Unavailable\r\n"
-            "Content-Type: text/html; charset=utf-8\r\n\r\n"
-            "<html><body><h1>501 Not Implemented: Camera stream is currently unavailable. Please try again later.</h1></body></html>"
-        ).encode("utf-8")
-        yield response
         return
 
     cap = cv2.VideoCapture("udp://127.0.0.1:1234")
@@ -254,12 +269,6 @@ async def video_stream(request: Request):
     if not cap.isOpened():
         print("Не удалось открыть поток видео. Остановка потока.")
         stop_ffmpeg()
-        response = (
-            "HTTP/1.1 503 Service Unavailable\r\n"
-            "Content-Type: text/html; charset=utf-8\r\n\r\n"
-            "<html><body><h1>501 Not Implemented: Camera stream is currently unavailable. Please try again later.</h1></body></html>"
-        ).encode("utf-8")
-        yield response
         return
 
     try:
@@ -309,10 +318,13 @@ async def video(request: Request):
     return FileResponse(VIDEO_PATH, media_type="video/mp4")
 
 # 3. API-запросы и проверка статуса сессии
+# Обновленная проверка сессии
 @app.get("/session_status", response_class=JSONResponse)
 async def session_status(request: Request):
     user = request.session.get('user')
     token = request.session.get('token')
+
+    # Проверка наличия данных в сессии
     if not user or not token:
         return {"authenticated": False}
 
@@ -322,9 +334,11 @@ async def session_status(request: Request):
     result = cursor.fetchone()
     conn.close()
 
+    # Сравниваем токен с сессией
     if result is None or result[0] != token:
         return {"authenticated": False}
 
+    # Если сессия валидна, отправляем успешный статус
     return {"authenticated": True, "username": user}
 
 
