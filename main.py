@@ -1,5 +1,4 @@
 import os
-import app
 os.system("pip freeze > requirements.txt")
 import subprocess
 import time
@@ -20,11 +19,11 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.add_middleware(SessionMiddleware, secret_key="mysecretkey")
 templates = Jinja2Templates(directory="templates")
 
-VIDEO_PATH = os.path.join("templates/assets/videos", "video.mp4")
+VIDEO_PATH = os.path.join("static/videos", "video.mp4")
 PHOTO_PATH = os.path.join("templates/assets/photos", "image.jpg")
 DATABASE = "users.db"
 
-# ONVIF setup
+# Настройка ONVIF
 ip = '192.168.207.71'
 username = 'admin'
 password = 'rubetek11'
@@ -117,6 +116,8 @@ async def login(request: Request, username: str = Form(...), password: str = For
     request.session['token'] = session_token
     return RedirectResponse("/", status_code=302)
 
+
+# Деавторизация
 @app.get("/logout")
 async def logout(request: Request):
     user = request.session.get('user')
@@ -137,6 +138,10 @@ async def register_page(request: Request):
 
 @app.post("/register")
 async def register(username: str = Form(...), password: str = Form(...)):
+    if len(password) < 8:
+        HTTPException(status_code=0, detail="Bad password")
+    if len(username) < 3:
+        HTTPException(status_code=0, detail="Bad username")
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
     try:
@@ -208,7 +213,7 @@ async def start_ffmpeg():
 
 
 
-
+# Функция для остановки ffmpeg
 def stop_ffmpeg():
     global ffmpeg_process, streaming_active
     if isinstance(ffmpeg_process, subprocess.Popen):
@@ -226,6 +231,8 @@ def stop_ffmpeg():
         print("Процесс ffmpeg не был запущен.")
 
 
+
+# Функция ffmpeg
 async def video_stream(request: Request):
     global streaming_active
 
@@ -297,7 +304,8 @@ async def register_page(request: Request):
 
 # 2. Статические медиа-файлы
 @app.get("/video")
-def video():
+async def video(request: Request):
+    get_current_user(request)
     return FileResponse(VIDEO_PATH, media_type="video/mp4")
 
 # 3. API-запросы и проверка статуса сессии

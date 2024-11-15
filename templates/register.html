@@ -5,13 +5,182 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/styles/users.css">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1e1e1e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 90vw;
+            max-width: 400px;
+            background: linear-gradient(145deg, #2b2b2b, #1a1a1a);
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            padding: 30px;
+            box-sizing: border-box;
+            animation: fadeIn 1.5s ease-in-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+        }
+
+        :target ~ .container {
+            animation: fadeOut 1s ease-in-out forwards;
+            pointer-events: none;
+        }
+
+        .title-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #4CAF50;
+            padding-left: 10px;
+            box-sizing: border-box;
+        }
+
+        .title {
+            font-size: 34px;
+            color: #4CAF50;
+            font-weight: 700;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding-top: 20px;
+            gap: 20px;
+        }
+
+        .log-button {
+            padding: 8px 15px;
+            font-size: 16px;
+            background-color: #2b2b2b;
+            color: #4CAF50;
+            border-radius: 10px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.4s, color 0.4s, transform 0.2s;
+        }
+
+        .log-button:hover {
+            background-color: #4CAF50;
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+
+        .custom-button {
+            width: 60px;
+            height: 60px;
+            background-color: #4CAF50;
+            color: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.4s, transform 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .custom-button:hover {
+            background-color: #313131;
+            transform: scale(1.1);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        input {
+            padding: 15px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: 1px solid #333333;
+            background-color: #2b2b2b;
+            color: #f0f0f0;
+            outline: none;
+            transition: background-color 0.4s, border-color 0.4s;
+        }
+
+        input::placeholder {
+            color: #7a7a7a;
+        }
+
+        input:focus {
+            background-color: #1a1a1a;
+            border-color: #4CAF50;
+        }
+
+        .icon-button {
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        .icon-button:hover {
+            transform: scale(1.1);
+        }
+
+        .icon-image {
+            width: 30px;
+            height: 30px;
+        }
+    </style>
     <script>
         async function handleSignUp(event) {
             event.preventDefault(); // Предотвращаем переход по ссылке
 
             const username = document.querySelector('input[name="username"]').value;
             const password = document.querySelector('input[name="password"]').value;
+
+            if (username.length < 4) {
+                alert('Username must be at least 4 characters long');
+                event.preventDefault();
+                return;
+            }
+            else if (password.length < 8) {
+                alert('Password must be at least 8 characters long');
+                event.preventDefault();
+                return;
+            }
 
             try {
                 const response = await fetch('/register', {
@@ -38,14 +207,14 @@
     <div class="container">
         <div class="title-container">
             <div class="title">Sign Up</div>
-            <a href="/" class="home-button">Home</a>
+            <a href="/login" class="log-button">Sign In</a>
         </div>
         <form>
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="password" name="password" placeholder="Password" required>
+            <input type="text" name="username" placeholder="Username (4+ chars)" required>
+            <input type="password" name="password" placeholder="Password (8+ chars)" required>
             <div class="button-container">
-                <a href="/login" class="custom-button">@</a>
-                <a href="#" onclick="handleSignUp(event)" class="custom-button">></a>
+                <a href="/" class="custom-button" onclick="handleFadeOut(event)"><img src="/static/images/home.png" alt="Icon" class="icon-image"></a>
+                <a href="#" onclick="handleSignUp(event)" class="custom-button"><img src="/static/images/plus.png" alt="Icon" class="icon-image"></a>
             </div>
         </form>
     </div>
