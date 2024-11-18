@@ -17,7 +17,7 @@ from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
-app.add_middleware( # type: ignore
+app.add_middleware(
     SessionMiddleware,
     secret_key=os.urandom(64),
     session_cookie="my_session",
@@ -310,6 +310,10 @@ async def login_page(request: Request):
 @app.get("/register")
 async def register_page(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
+
+@app.get("/profile")
+async def profile_page(request: Request):
+    return templates.TemplateResponse("profile.html", {"request": request})
 
 # 2. Статические медиа-файлы
 @app.get("/video")

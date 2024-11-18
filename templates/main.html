@@ -68,6 +68,7 @@
       font-size: 16px;
       color: #f0f0f0;
       background-color: #2b2b2b;
+      text-decoration: none;
       padding: 8px;
       border-radius: 10px;
     }
@@ -143,6 +144,17 @@
       background-color: #313131;
       transform: scale(1.1);
     }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
   </style>
 </head>
 <body>
@@ -150,11 +162,12 @@
     <div class="title-container">
       <div class="title">Camera Portal</div>
       <div class="user-info">
-        <div id="username" class="username">Guest</div>
+        <a id="username" class="username" href="/profile">Guest</a>
         <a id="login-link" class="login-link" href="/login">Log in</a>
       </div>
     </div>
-    <textarea class="text-field" readonly>Camera Portal is a user-friendly platform designed for ONVIF-compatible cameras, providing a seamless way to manage and view your camera streams. It features an elegant and responsive interface, complete with a visually appealing video player to enhance your viewing experience. Users can easily register and manage their accounts, ensuring secure access to camera feeds. With well-crafted design elements and a focus on usability, this portal offers both a beautiful and efficient solution for camera monitoring.</textarea>
+    <label for="text-field" class="visually-hidden">Description</label>
+    <textarea id="text-field" class="text-field" readonly>Camera Portal is a user-friendly platform designed for ONVIF-compatible cameras, providing a seamless way to manage and view your camera streams. It features an elegant and responsive interface, complete with a visually appealing video player to enhance your viewing experience. Users can easily register and manage their accounts, ensuring secure access to camera feeds. With well-crafted design elements and a focus on usability, this portal offers both a beautiful and efficient solution for camera monitoring.</textarea>
     <div class="bottom-container">
       <div class="left-buttons">
         <a href="./video" class="round-button">

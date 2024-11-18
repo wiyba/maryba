@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log In</title>
-    <link rel="icon" type="image/png" href="/static/images/arrow.png">
+    <title>Profile</title>
+    <link rel="icon" type="image/png" href="/static/images/home.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <script src="/static/js/profile-submit.js"></script>
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
@@ -38,12 +39,39 @@
             border-bottom: 2px solid #4CAF50;
             padding-left: 10px;
             box-sizing: border-box;
+            gap: 10px; /* Расстояние между элементами */
         }
 
         .title {
             font-size: 34px;
             color: #4CAF50;
             font-weight: 700;
+            margin-right: auto;
+        }
+
+        .username_static {
+          font-size: 16px;
+          color: #f0f0f0;
+          background-color: #2b2b2b;
+          padding: 8px;
+          border-radius: 10px;
+          margin-left: 5px;
+        }
+
+        .login-link {
+          font-size: 16px;
+          color: #4CAF50;
+          text-decoration: none;
+          transition: color 0.4s, background-color 0.4s;
+          padding: 8px;
+          background-color: #2b2b2b;
+          border-radius: 10px;
+          margin-left: 5px;
+        }
+
+        .login-link:hover {
+          color: #ffffff;
+          background-color: #4CAF50;
         }
 
         .button-container {
@@ -53,25 +81,6 @@
             width: 100%;
             padding-top: 20px;
             gap: 20px;
-        }
-
-        .reg-button {
-            padding: 8px 15px;
-            font-size: 16px;
-            background-color: #2b2b2b;
-            color: #4CAF50;
-            border-radius: 10px;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.4s, color 0.4s, transform 0.2s;
-        }
-
-        .reg-button:hover {
-            background-color: #4CAF50;
-            color: #ffffff;
-            transform: scale(1.1);
         }
 
         .custom-button {
@@ -142,20 +151,22 @@
 <body>
     <div class="container">
         <div class="title-container">
-            <div class="title">Sign In</div>
-            <a href="/register" class="reg-button">Sign Up</a>
+            <div class="title">Profile</div>
+            <div id="username_static" class="username_static">Guest</div>
+            <a id="login-link" class="login-link" href="/login">Sign in</a>
         </div>
         <form onsubmit="handleLogin(event)">
             <label for="username" class="visually-hidden">Username</label>
-            <input type="text"  id="username" name="username" placeholder="Username" required>
+            <input type="text" id="username" name="username" placeholder="Username" required>
             <label for="password" class="visually-hidden">Password</label>
             <input type="password" id="password" name="password" placeholder="Password" required>
+            <label for="ip" class="visually-hidden">IP Address</label>
+            <input type="text" id="ip" name="ip" placeholder="IP Address" required>
             <div class="button-container">
                 <a href="./" class="custom-button"><img src="/static/images/home.png" alt="Icon" class="icon-image"></a>
-                <a href="#" onclick="handleLogin(event)" class="custom-button"><img src="/static/images/arrow.png" alt="Icon" class="icon-image"></a>
+                <a href="#" onclick="" class="custom-button"><img src="/static/images/arrow.png" alt="Icon" class="icon-image"></a> <comment>MUST BE DONE SOON</comment>
             </div>
         </form>
     </div>
-    <script src="/static/js/login-validation.js"></script>
 </body>
 </html>
