@@ -21,7 +21,8 @@ Description=$SERVICE_DESCRIPTION
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/docker run --rm --name $SERVICE_NAME -p $PORT:8000 -d $DOCKER_IMAGE
+Type=simple
+ExecStart=/usr/bin/docker run --rm --name $SERVICE_NAME -p $PORT:8000 $DOCKER_IMAGE
 ExecStop=/usr/bin/docker stop $SERVICE_NAME
 Restart=always
 
@@ -53,6 +54,15 @@ install_service() {
         echo "Docker Compose is already installed."
     fi
 
+    if docker ps -a --format '{{.Names}}' | grep -Eq "^$SERVICE_NAME\$"; then
+        echo "Удаляем старый контейнер $SERVICE_NAME..."
+        docker rm -f $SERVICE_NAME
+    fi
+
+    if docker images --format '{{.Repository}}:{{.Tag}}' | grep -Eq "^$DOCKER_IMAGE\$"; then
+        echo "Удаляем старый Docker образ $DOCKER_IMAGE..."
+        docker rmi $DOCKER_IMAGE
+    fi
 
     if [ ! -d "$PROJECT_DIR" ]; then
         echo "Cloning repository..."
