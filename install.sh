@@ -64,6 +64,13 @@ install_service() {
         docker rmi $DOCKER_IMAGE
     fi
 
+    echo "Введите домен для вашего сервиса:"
+    read -r DOMAIN
+    if [ -z "$DOMAIN" ]; then
+        echo "Домен не может быть пустым. Повторите попытку."
+        return 1
+    fi
+
     if [ ! -d "$PROJECT_DIR" ]; then
         echo "Cloning repository..."
         git clone https://github.com/wiyba/maryba.git $PROJECT_DIR
@@ -72,6 +79,12 @@ install_service() {
         cd $PROJECT_DIR || exit
         git pull
     fi
+
+    STATIC_SRC="$PROJECT_DIR/static"
+    STATIC_DEST="/var/www/$DOMAIN/static"
+    echo "Копируем статические файлы из $STATIC_SRC в $STATIC_DEST..."
+    mkdir -p "$STATIC_DEST"
+    cp -r "$STATIC_SRC/"* "$STATIC_DEST"
 
     cd $PROJECT_DIR || exit
 
