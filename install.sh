@@ -21,7 +21,8 @@ Description=$SERVICE_DESCRIPTION
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/docker run --rm --name $SERVICE_NAME -p $PORT:8000 -d $DOCKER_IMAGE
+Type=simple
+ExecStart=/usr/bin/docker run --rm --name $SERVICE_NAME -p $PORT:8000 $DOCKER_IMAGE
 ExecStop=/usr/bin/docker stop $SERVICE_NAME
 Restart=always
 
