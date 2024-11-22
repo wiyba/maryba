@@ -14,13 +14,6 @@ if [[ -z "$ACTION" ]]; then
 fi
 
 create_service() {
-    echo "Введите домен для вашего сервиса:"
-    read -r DOMAIN
-    if [ -z "$DOMAIN" ]; then
-        echo "Домен не может быть пустым. Повторите попытку."
-        return 1
-    fi
-
     echo "Создаём systemd-сервис для Docker-контейнера..."
     cat > $SERVICE_FILE <<EOF
 [Unit]
@@ -29,7 +22,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/docker run --rm --name $SERVICE_NAME -v /var/www/$DOMAIN/static:/static -p $PORT:8000 $DOCKER_IMAGE
+ExecStart=/usr/bin/docker run --rm --name $SERVICE_NAME -p $PORT:8000 $DOCKER_IMAGE
 ExecStop=/usr/bin/docker stop $SERVICE_NAME
 Restart=always
 
