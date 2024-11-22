@@ -88,6 +88,16 @@ install_service() {
 update_service() {
     echo "Обновляем проект..."
 
+    if docker ps -a --format '{{.Names}}' | grep -Eq "^$SERVICE_NAME\$"; then
+      echo "Удаляем старый контейнер $SERVICE_NAME..."
+      docker rm -f $SERVICE_NAME
+    fi
+
+    if docker images --format '{{.Repository}}:{{.Tag}}' | grep -Eq "^$DOCKER_IMAGE\$"; then
+        echo "Удаляем старый Docker образ $DOCKER_IMAGE..."
+        docker rmi $DOCKER_IMAGE
+    fi
+
     if [ -d "$PROJECT_DIR" ]; then
         cd $PROJECT_DIR || exit
         echo "Pulling latest changes..."
@@ -111,6 +121,16 @@ remove_service() {
     systemctl daemon-reload
     echo "Сервис $SERVICE_NAME удалён."
 
+    if docker ps -a --format '{{.Names}}' | grep -Eq "^$SERVICE_NAME\$"; then
+        echo "Удаляем старый контейнер $SERVICE_NAME..."
+        docker rm -f $SERVICE_NAME
+    fi
+
+    if docker images --format '{{.Repository}}:{{.Tag}}' | grep -Eq "^$DOCKER_IMAGE\$"; then
+        echo "Удаляем старый Docker образ $DOCKER_IMAGE..."
+        docker rmi $DOCKER_IMAGE
+    fi
+
     if [ -d "$PROJECT_DIR" ]; then
         rm -rf "$PROJECT_DIR"
         echo "Проект удалён."
@@ -126,12 +146,12 @@ case $ACTION in
     update)
         update_service
         ;;
-    remove)
-        remove_service
+    uninstall)
+        uninstall_service
         ;;
     *)
         echo "Invalid action: $ACTION"
-        echo "Usage: $0 [install|update|remove]"
+        echo "Usage: $0 [install|update|uninstall]"
         exit 1
         ;;
 esac
