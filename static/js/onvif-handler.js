@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let timeout = 500;
     console.log("Ожидание картинки с '/onvif_source'. Таймаут равен", timeout, "мс" );
 
-    // Обработчик события load для проверки, была ли загружена картинка с камеры
     img.addEventListener('load', () => {
         hasLoaded = true;
         if (img.naturalWidth === 0 || img.naturalHeight === 0) {
@@ -12,10 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Обработчик события error для обработки ошибок загрузки картинки с камеры
     img.addEventListener('error', showError);
 
-    // Таймер для проверки статуса загрузки через 0.5 секунды
     setTimeout(() => {
         if (!hasLoaded) {
             showError();

@@ -1,9 +1,12 @@
 from app.api.auth import login_user, register_user, logout_user
+from app.config import config
 from app.main import templates
+import os
 from fastapi import APIRouter, Request, Form, HTTPException
 from fastapi.responses import RedirectResponse, HTMLResponse
 
 router = APIRouter()
+
 
 @router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
@@ -31,12 +34,14 @@ async def logout(request: Request):
 
 @router.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request):
+    config.SECURITY_KEY = os.urandom(16).hex()
+    print(f"\n\nСекрет для регистрации: {config.SECURITY_KEY}\n\n")
     return templates.TemplateResponse("register.html", {"request": request})
 
 @router.post("/register")
-async def register(username: str = Form(...), password: str = Form(...)):
+async def register(username: str = Form(...), password: str = Form(...), security_key: str = Form(...)):
     try:
-        register_user(username, password)
+        register_user(username, password, security_key)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

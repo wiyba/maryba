@@ -158,6 +158,9 @@
             <div class="input-container" data-placeholder-right="8-32 chars">
                 <input type="password" name="password" placeholder="Password" maxlength="32" pattern="\S+" title="No spaces are allowed." required>
             </div>
+            <div class="input-container" data-placeholder-right="32 chars">
+                <input type="password" name="security_key" placeholder="Secret (console)" maxlength="32" required>
+            </div>
             <div class="button-container">
                 <a href="/" class="custom-button"><img src="/static/images/home.png" alt="Icon" class="icon-image"></a>
                 <a href="#" onclick="handleSignUp(event)" class="custom-button"><img src="/static/images/plus.png" alt="Icon" class="icon-image"></a>
@@ -165,7 +168,6 @@
         </form>
     </div>
     <script>
-        // JavaScript для удаления всех символов, кроме разрешенных
         document.querySelectorAll('input[name="username"], input[name="password"]').forEach(input => {
             input.addEventListener('input', () => {
                 input.value = input.value.replace(/[^A-Za-zА-Яа-я0-9_]/g, '');

@@ -14,12 +14,12 @@ def check_camera_availability():
                 'ffmpeg',
                 '-rtsp_transport', 'tcp',
                 '-i', onvif.rtsp_url,
-                '-t', '3',  # Проверка камеры в течение 3 секунд
+                '-t', '3',
                 '-f', 'null', '-'
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            timeout=5  # Таймаут в 5 секунд
+            timeout=5
         )
         if result.returncode != 0:
             print("Камера недоступна. Остановка потока.")

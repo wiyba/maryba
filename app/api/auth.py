@@ -29,20 +29,23 @@ def login_user(username: str, password: str):
     return session_token
 
 
-def register_user(username: str, password: str):
-    hashed_password = hash_password(password)
+def register_user(username: str, password: str, security_key: str):
+    if security_key != config.SECURITY_KEY:
+        raise ValueError("Неверный секрет")
+    elif security_key == config.SECURITY_KEY:
+        hashed_password = hash_password(password)
+        conn = sqlite3.connect(config.DATABASE)
+        cursor = conn.cursor()
 
-    conn = sqlite3.connect(config.DATABASE)
-    cursor = conn.cursor()
-
-    try:
-        cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
-        conn.commit()
-    except sqlite3.IntegrityError:
+        try:
+            cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
+            conn.commit()
+        except sqlite3.IntegrityError:
+            conn.close()
+            raise ValueError("Пользователь уже существует")
         conn.close()
-        raise ValueError("Пользователь уже существует")
-
-    conn.close()
+    else:
+        raise ValueError("Неизвестная ошибка")
 
 
 def logout_user(username: str):

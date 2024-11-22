@@ -4,6 +4,12 @@ async function handleLogin(event) {
     const username = document.querySelector('input[name="username"]').value;
     const password = document.querySelector('input[name="password"]').value;
 
+    if (username === '' || password === '') {
+        alert('All fields must be filled in');
+        event.preventDefault();
+        return;
+    }
+
     try {
         const response = await fetch('/login', {
             method: 'POST',

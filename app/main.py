@@ -8,6 +8,7 @@ import os
 app = FastAPI()
 templates = Jinja2Templates(directory=config.TEMPLATES_DIR)
 app.mount("/static", StaticFiles(directory=config.STATIC_DIR), name="static")
+
 app.add_middleware(
     SessionMiddleware,
     secret_key=os.urandom(64),
@@ -26,3 +27,8 @@ async def startup():
     app.include_router(onvif.router)
     app.include_router(gallery.router)
     print("Модули импортированы успешно")
+    print("Вы получите секрет для регистрации при переходе на ./register")
+
+@app.on_event("shutdown")
+async def shutdown():
+    print("Успешно остановлено")

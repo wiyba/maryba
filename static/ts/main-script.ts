@@ -5,13 +5,13 @@ interface SessionStatus {
 
 async function checkSession() {
     const response: Response = await fetch('/session_status');
-    const data: SessionStatus = await response.json(); // Используем типизированные данные
+    const data: SessionStatus = await response.json();
 
-    const loginLink = document.getElementById('login-link') as HTMLAnchorElement; // Явное указание типа
+    const loginLink = document.getElementById('login-link') as HTMLAnchorElement;
     const usernameElement = document.getElementById('username') as HTMLElement;
 
     if (data.authenticated) {
-        loginLink.href = "/logout";  // Теперь TypeScript знает, что это ссылка и у неё есть свойство href
+        loginLink.href = "/logout";
         loginLink.textContent = "Log out";
         usernameElement.textContent = data.username || "Guest";
     } else {

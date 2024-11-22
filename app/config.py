@@ -1,4 +1,5 @@
 import os
+import json
 import bcrypt
 
 class Config:
@@ -19,6 +20,8 @@ class Config:
     # Остальные ссылки
     DATABASE = os.path.join(BASE_DIR, "../users.db")  # Путь к базе данных
     SESSION_SECRET = os.urandom(64)  # Секрет для сессий
+    SECURITY_KEY = os.urandom(16).hex() # Секрет для регистрации
+
 
 class Password:
     @staticmethod
