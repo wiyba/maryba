@@ -150,11 +150,13 @@ install_service() {
         fi
 
         echo "Запрашиваем новые сертификаты для домена $DOMAIN..."
+        sudo systemctl stop nginx
         ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt \
             --issue --standalone --force \
             -d "$DOMAIN" \
             --key-file "$SSL_KEY" \
             --fullchain-file "$SSL_PATH"
+        sudo systemctl start nginx
 
         # Проверяем, успешно ли создан сертификат
         if [ -f "$SSL_PATH" ] && [ -f "$SSL_KEY" ]; then
