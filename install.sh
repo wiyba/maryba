@@ -70,6 +70,66 @@ install_ssl() {
     fi
 }
 
+install_nginx() {
+    echo "Создаём конфигурацию Nginx для домена $DOMAIN..."
+
+    # Удаляем старую конфигурацию, если она есть
+    if [ -f "$NGINX_CONFIG_PATH" ]; then
+        echo "Удаляем старую конфигурацию Nginx для $DOMAIN..."
+        rm -f "$NGINX_CONFIG_PATH"
+    fi
+
+    if [ -f "$NGINX_CONFIG_LINK" ]; then
+        echo "Удаляем старую символическую ссылку для $DOMAIN..."
+        rm -f "$NGINX_CONFIG_LINK"
+    fi
+
+    # Создаём новую конфигурацию Nginx
+    cat > "$NGINX_CONFIG_PATH" <<EOF
+server {
+    listen 80;
+    server_name $DOMAIN www.$DOMAIN;
+
+    return 301 https://\$host\$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name $DOMAIN www.$DOMAIN;
+
+    ssl_certificate $SSL_PATH;
+    ssl_certificate_key $SSL_KEY;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+EOF
+
+    echo "Конфигурация Nginx создана: $NGINX_CONFIG_PATH"
+
+    # Создаём символическую ссылку в sites-enabled
+    ln -s "$NGINX_CONFIG_PATH" "$NGINX_CONFIG_LINK"
+
+    # Проверяем конфигурацию Nginx
+    echo "Проверяем конфигурацию Nginx..."
+    nginx -t
+
+    # Если проверка прошла успешно, перезапускаем Nginx
+    if [ $? -eq 0 ]; then
+        echo "Перезапускаем Nginx..."
+        systemctl reload nginx
+        echo "Nginx успешно настроен и перезапущен!"
+    else
+        echo "Ошибка в конфигурации Nginx. Проверьте файл $NGINX_CONFIG_PATH."
+        exit 1
+    fi
+}
+
 install_service() {
     echo "Устанавливаем проект..."
 
@@ -132,6 +192,8 @@ install_service() {
     else
         echo "Установка SSL пропущена."
     fi
+
+    install_nginx
 }
 
 update_service() {
