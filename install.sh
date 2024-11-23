@@ -83,6 +83,8 @@ install_service() {
     systemctl enable $SERVICE_NAME
     systemctl start $SERVICE_NAME
     echo "Копируем статические файлы из контейнера $STATIC_SRC в $STATIC_DEST..."
+    STATIC_SRC="$SERVICE_NAME:$PROJECT_DIR/static"
+    STATIC_DEST="/var/www/$DOMAIN"
     if [ -d "$STATIC_DEST" ]; then
         rm -rf "$STATIC_DEST"
     fi
@@ -99,8 +101,13 @@ install_service() {
         read -r DOMAIN
     done
 
-    STATIC_SRC="$SERVICE_NAME:$PROJECT_DIR/static"
-    STATIC_DEST="/var/www/$DOMAIN"
+    echo "Введите IP для вашего сервиса:"
+    read -r IP
+    while [ -z "$IP" ]; do
+        echo "IP не может быть пустым. Повторите ввод:"
+        read -r IP
+    done
+
     CERTS_DIR="/var/lib/$SERVICE_NAME/certs/"
     SSL_PATH="/var/lib/$SERVICE_NAME/certs/fullchain.pem"
     SSL_KEY="/var/lib/$SERVICE_NAME/certs/key.pem"
@@ -166,14 +173,14 @@ install_service() {
 
     cat > "$NGINX_CONFIG_PATH" <<EOF
 server {
-    listen 80;
+    listen $IP:80;
     server_name $DOMAIN www.$DOMAIN;
 
     return 301 https://\$host\$request_uri;
 }
 
 server {
-    listen 443 ssl;
+    listen $IP:443 ssl;
     server_name $DOMAIN www.$DOMAIN;
 
     ssl_certificate $SSL_PATH;
@@ -290,8 +297,8 @@ case $ACTION in
         uninstall_service
         ;;
     *)
-        echo "Invali action: $ACTION"
-        echo "Usag: $0 [install|update|uninstall]"
+        echo "Invalid action: $ACTION"
+        echo "Usage: $0 [install|update|uninstall]"
         exit 1
         ;;
 esac
