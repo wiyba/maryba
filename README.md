@@ -29,3 +29,7 @@ The `install.sh` script also provides system management commands for handling th
 - **Remove**: Stops the service, deletes the systemd configuration, Docker container, image, and all associated files.
 
 These commands ensure that the `maryba` service runs smoothly and can be easily maintained.
+
+### Domain
+You can use `curl https://get.acme.sh | sh -s email=EMAIL` to install acme and than use built-in SSL configurator by typing Y when promted. Also, to use reverse proxy for Uvicorn's port you need to install `nginx`.
+SSL certs must be located in `/var/lib/maryba/certs/` dircetory as `fullchain.pem` and `key.pem`.
