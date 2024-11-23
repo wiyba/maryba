@@ -1,4 +1,5 @@
 #!/bin/bash
+cd ~ || exit
 
 SERVICE_NAME="maryba"
 SERVICE_DESCRIPTION="Maryba Docker Service"
