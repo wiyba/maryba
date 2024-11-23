@@ -106,6 +106,7 @@ install_service() {
     CURRENT_USER=$(whoami)
     ACME_DIR="$HOME/.acme.sh"
     ACME_SCRIPT="$ACME_DIR/acme.sh"
+    CERTS_DIR="/var/lib/$SERVICE_NAME/certs/"
     SSL_PATH="/var/lib/$SERVICE_NAME/certs/key.pem"
     SSL_KEY="/var/lib/$SERVICE_NAME/certs/fullchain.pem"
     NGINX_CONFIG_PATH="/etc/nginx/sites-available/$DOMAIN"
