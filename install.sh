@@ -75,6 +75,15 @@ install_service() {
 
     cd $PROJECT_DIR || exit
 
+    echo "Building Docker image..."
+    docker build -t $DOCKER_IMAGE .
+
+    echo "Настройка systemd-сервиса..."
+    create_service
+    systemctl enable $SERVICE_NAME
+    systemctl start $SERVICE_NAME
+    echo "Сервис $SERVICE_NAME установлен и запущен! Сайт доступен на http://localhost:$PORT"
+
     echo "Введите домен для вашего сервиса:"
     read -r DOMAIN
     while [ -z "$DOMAIN" ]; do
@@ -87,15 +96,6 @@ install_service() {
     echo "Копируем статические файлы из контейнера $STATIC_SRC в $STATIC_DEST..."
     mkdir -p "$STATIC_DEST"
     docker cp "$SERVICE_NAME:/app/static" "$STATIC_DEST"
-
-    echo "Building Docker image..."
-    docker build -t $DOCKER_IMAGE .
-
-    echo "Настройка systemd-сервиса..."
-    create_service
-    systemctl enable $SERVICE_NAME
-    systemctl start $SERVICE_NAME
-    echo "Сервис $SERVICE_NAME установлен и запущен! Сайт доступен на http://localhost:$PORT"
 }
 
 update_service() {
@@ -117,6 +117,20 @@ update_service() {
         git pull
         echo "Rebuilding Docker image..."
         docker build -t $DOCKER_IMAGE .
+
+        echo "Введите домен для вашего сервиса:"
+        read -r DOMAIN
+        while [ -z "$DOMAIN" ]; do
+            echo "Домен не может быть пустым. Повторите ввод:"
+            read -r DOMAIN
+        done
+
+        STATIC_SRC="$SERVICE_NAME:$PROJECT_DIR/static"
+        STATIC_DEST="/var/www/$DOMAIN/static"
+        echo "Копируем статические файлы из контейнера $STATIC_SRC в $STATIC_DEST..."
+        mkdir -p "$STATIC_DEST"
+        docker cp "$SERVICE_NAME:/app/static" "$STATIC_DEST"
+
         echo "Restarting service..."
         systemctl restart $SERVICE_NAME
         echo "Проект успешно обновлён!"
