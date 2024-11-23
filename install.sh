@@ -290,8 +290,8 @@ case $ACTION in
         uninstall_service
         ;;
     *)
-        echo "Invalid action: $ACTION"
-        echo "Usage: $0 [install|update|uninstall]"
+        echo "Invali action: $ACTION"
+        echo "Usag: $0 [install|update|uninstall]"
         exit 1
         ;;
 esac
