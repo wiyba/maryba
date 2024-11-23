@@ -92,11 +92,135 @@ install_service() {
         read -r DOMAIN
     done
 
+    # Создание локальной папки проекта
     STATIC_SRC="$SERVICE_NAME:$PROJECT_DIR/static"
     STATIC_DEST="/var/www/$DOMAIN"
     echo "Копируем статические файлы из контейнера $STATIC_SRC в $STATIC_DEST..."
+    if [ -d "$STATIC_DEST" ]; then
+        rm -rf "$STATIC_DEST"
+    fi
     mkdir -p "$STATIC_DEST"
     docker cp "$SERVICE_NAME:/app/static" "$STATIC_DEST"
+
+    # Создание конфигурации для проксирования nginx
+    CURRENT_USER=$(whoami)
+    ACME_DIR="$HOME/.acme.sh"
+    ACME_SCRIPT="$ACME_DIR/acme.sh"
+    SSL_PATH="/var/lib/$SERVICE_NAME/certs/key.pem"
+    SSL_KEY="/var/lib/$SERVICE_NAME/certs/fullchain.pem"
+    NGINX_CONFIG_PATH="/etc/nginx/sites-available/$DOMAIN"
+    NGINX_CONFIG_LINK="/etc/nginx/sites-enabled/$DOMAIN"
+
+    if [ -d "$ACME_DIR" ] && [ -f "$ACME_SCRIPT" ]; then
+        echo "acme.sh уже установлен в $ACME_DIR."
+    else
+        echo "acme.sh не найден. В процессе установки введите свой email на который зарегистрирован домен."
+
+        # Устанавливаем acme.sh
+        curl https://get.acme.sh | sh -s email=EMAIL
+
+        # Проверяем, успешно ли установлен
+        if [ -f "$ACME_SCRIPT" ]; then
+            echo "acme.sh успешно установлен в $ACME_DIR."
+        else
+            echo "Ошибка при установке acme.sh. Проверьте подключение к интернету и повторите попытку."
+            exit 1
+        fi
+    fi
+
+    if [ ! -x "$ACME_SCRIPT" ]; then
+        chmod +x "$ACME_SCRIPT"
+    fi
+
+    if [ ! -f "$SSL_PATH" ] || [ ! -f "$SSL_KEY" ]; then
+        echo "Сертификаты не найдены или не полные. Проверяем директорию $CERTS_DIR..."
+
+        if [ ! -d "$CERTS_DIR" ]; then
+            mkdir -p "$CERTS_DIR"
+        fi
+
+        if [ -f "$SSL_PATH" ]; then
+            echo "Удаляем старый файл сертификата $SSL_PATH..."
+            rm -f "$SSL_PATH"
+        fi
+
+        if [ -f "$SSL_KEY" ]; then
+            echo "Удаляем старый файл ключа $SSL_KEY..."
+            rm -f "$SSL_KEY"
+        fi
+
+        echo "Запрашиваем новые сертификаты для домена $DOMAIN..."
+        ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt \
+            --issue --standalone \
+            -d "$DOMAIN" \
+            --key-file "$SSL_KEY" \
+            --fullchain-file "$SSL_PATH"
+
+        # Проверяем, успешно ли создан сертификат
+        if [ -f "$SSL_PATH" ] && [ -f "$SSL_KEY" ]; then
+            echo "Сертификаты успешно созданы и сохранены в $CERTS_DIR."
+        else
+            echo "Ошибка при создании сертификатов. Проверьте настройки acme.sh."
+            exit 1
+        fi
+    else
+        echo "Сертификаты уже существуют: $SSL_PATH и $SSL_KEY."
+    fi
+
+    echo "Создаём конфигурацию Nginx для домена $DOMAIN..."
+
+    if [ -f "$NGINX_CONFIG_PATH" ]; then
+        rm -f "$NGINX_CONFIG_PATH"
+        rm -f "$NGINX_CONFIG_LINK"
+    fi
+
+    cat > "$NGINX_CONFIG_PATH" <<EOF
+server {
+    listen 80;
+    server_name $DOMAIN www.$DOMAIN;
+
+    return 301 https://\$host\$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name $DOMAIN www.$DOMAIN;
+
+    ssl_certificate /$CURRENT_USER/.acme.sh/${DOMAIN}_ecc/fullchain.cer;
+    ssl_certificate_key /$CURRENT_USER/.acme.sh/${DOMAIN}_ecc/$DOMAIN.key;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+EOF
+
+    echo "Конфигурация Nginx создана: $NGINX_CONFIG_PATH"
+
+    # Создаём символическую ссылку в sites-enabled
+    if [ -f "$NGINX_CONFIG_LINK" ]; then
+        echo "Удаляем старую символическую ссылку для $DOMAIN..."
+        rm -f "$NGINX_CONFIG_LINK"
+    fi
+
+    ln -s "$NGINX_CONFIG_PATH" "$NGINX_CONFIG_LINK"
+
+    # Проверяем конфигурацию Nginx
+    echo "Проверяем конфигурацию Nginx..."
+    nginx -t
+
+    if [ $? -eq 0 ]; then
+        echo "Перезапускаем Nginx..."
+        systemctl reload nginx
+        echo "Nginx успешно настроен и перезапущен!"
+    else
+        echo "Ошибка в конфигурации Nginx. Проверьте файл $NGINX_CONFIG_PATH."
+    fi
+
 }
 
 update_service() {
