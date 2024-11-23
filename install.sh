@@ -140,7 +140,7 @@ update_service() {
     fi
 }
 
-remove_service() {
+uninstall_service() {
     echo "Удаляем сервис и проект..."
     systemctl stop $SERVICE_NAME
     systemctl disable $SERVICE_NAME
