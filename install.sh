@@ -152,6 +152,7 @@ install_service() {
         else
             echo "Сертификаты уже существуют: $SSL_PATH и $SSL_KEY."
         fi
+        sudo systemctl start nginx
     }
 
 
@@ -210,7 +211,8 @@ EOF
 
     if [ $? -eq 0 ]; then
         echo "Перезапускаем Nginx..."
-        systemctl reload nginx
+        sudo systemctl stop nginx
+        sudo systemctl start nginx
         echo "Nginx успешно настроен и перезапущен!"
     else
         echo "Ошибка в конфигурации Nginx. Проверьте файл $NGINX_CONFIG_PATH."
