@@ -82,6 +82,12 @@ install_service() {
     create_service
     systemctl enable $SERVICE_NAME
     systemctl start $SERVICE_NAME
+    echo "Копируем статические файлы из контейнера $STATIC_SRC в $STATIC_DEST..."
+    if [ -d "$STATIC_DEST" ]; then
+        rm -rf "$STATIC_DEST"
+    fi
+    mkdir -p "$STATIC_DEST"
+    docker cp "$SERVICE_NAME:/app/static" "$STATIC_DEST"
     echo "Сервис $SERVICE_NAME установлен и запущен! Сайт доступен на http://localhost:$PORT"
 
 
@@ -96,18 +102,10 @@ install_service() {
     STATIC_SRC="$SERVICE_NAME:$PROJECT_DIR/static"
     STATIC_DEST="/var/www/$DOMAIN"
     CERTS_DIR="/var/lib/$SERVICE_NAME/certs/"
-    SSL_PATH="/var/lib/$SERVICE_NAME/certs/key.pem"
-    SSL_KEY="/var/lib/$SERVICE_NAME/certs/fullchain.pem"
+    SSL_PATH="/var/lib/$SERVICE_NAME/certs/fullchain.pem"
+    SSL_KEY="/var/lib/$SERVICE_NAME/certs/key.pem"
     NGINX_CONFIG_PATH="/etc/nginx/sites-available/$DOMAIN"
     NGINX_CONFIG_LINK="/etc/nginx/sites-enabled/$DOMAIN"
-
-    # Создание локальной папки проекта
-    echo "Копируем статические файлы из контейнера $STATIC_SRC в $STATIC_DEST..."
-    if [ -d "$STATIC_DEST" ]; then
-        rm -rf "$STATIC_DEST"
-    fi
-    mkdir -p "$STATIC_DEST"
-    docker cp "$SERVICE_NAME:/app/static" "$STATIC_DEST"
 
     # Установка SSL сертефикатов
     install_ssl() {
