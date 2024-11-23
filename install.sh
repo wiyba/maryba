@@ -92,7 +92,7 @@ install_service() {
     done
 
     STATIC_SRC="$SERVICE_NAME:$PROJECT_DIR/static"
-    STATIC_DEST="/var/www/$DOMAIN/static"
+    STATIC_DEST="/var/www/$DOMAIN"
     echo "Копируем статические файлы из контейнера $STATIC_SRC в $STATIC_DEST..."
     mkdir -p "$STATIC_DEST"
     docker cp "$SERVICE_NAME:/app/static" "$STATIC_DEST"
@@ -126,7 +126,7 @@ update_service() {
         done
 
         STATIC_SRC="$SERVICE_NAME:$PROJECT_DIR/static"
-        STATIC_DEST="/var/www/$DOMAIN/static"
+        STATIC_DEST="/var/www/$DOMAIN"
         echo "Копируем статические файлы из контейнера $STATIC_SRC в $STATIC_DEST..."
         mkdir -p "$STATIC_DEST"
         docker cp "$SERVICE_NAME:/app/static" "$STATIC_DEST"
