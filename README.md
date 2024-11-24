@@ -8,17 +8,12 @@ To install, update, or uninstall the maryba service, you can use the following c
 #### Install
 
 ```sh
-sudo bash -c "$(curl -sL http://raw.githubusercontent.com/wiyba/maryba/main/install.sh)" @ install
-```
-
-#### Update
-```sh
-sudo bash -c "$(curl -sL http://raw.githubusercontent.com/wiyba/maryba/main/install.sh)" @ update
+sudo bash -c "$(curl -sL https://raw.githubusercontent.com/wiyba/maryba/main/setup.sh)" @ install
 ```
 
 #### Uninstall
 ```sh
-sudo bash -c "$(curl -sL http://raw.githubusercontent.com/wiyba/maryba/main/install.sh)" @ uninstall
+sudo bash -c "$(curl -sL https://raw.githubusercontent.com/wiyba/maryba/main/setup.sh)" @ uninstall
 ```
 
 ### Service Management
