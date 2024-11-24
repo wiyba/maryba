@@ -193,7 +193,6 @@ EOF
     ln -s "$NGINX_CONFIG_PATH" "$NGINX_CONFIG_LINK"
 
     echo "Проверяем конфигурацию Nginx..."
-    nginx -t
 
     if nginx -t; then
         echo "Перезапускаем Nginx..."
@@ -337,7 +336,7 @@ install_project() {
         echo
         echo
     fi
-    docker logs $SERVICE_NAME
+    docker logs -f -t $SERVICE_NAME
 }
 
 
