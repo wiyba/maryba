@@ -11,8 +11,6 @@ DOCKER_IMAGE="maryba:latest"
 PORT="8000"
 
 PROJECT_DIR="/var/lib/$SERVICE_NAME"
-STATIC_SRC="$SERVICE_NAME:/app/static"
-WEB_PROJECT_DIR="/var/www/$DOMAIN"
 CERTS_DIR="/var/lib/$SERVICE_NAME/certs/"
 SSL_PATH="/var/lib/$SERVICE_NAME/certs/fullchain.pem"
 SSL_KEY="/var/lib/$SERVICE_NAME/certs/key.pem"
@@ -290,8 +288,10 @@ install_project() {
 
     # Установка SSL
     if [[ "$install_ssl_answer" =~ ^[Yy]$ ]]; then
-        echo "Введите домен для установки SSL:"
-        read -r DOMAIN
+        while [[ -z "$DOMAIN" ]]; do
+            echo "Введите домен для установки SSL (не может быть пустым):"
+            read -r DOMAIN
+        done
 
         if [[ -z "$DOMAIN" ]]; then
             echo "Ошибка: домен не может быть пустым для установки SSL."
@@ -305,10 +305,17 @@ install_project() {
 
     # Настройка Nginx
     if [[ "$install_nginx_answer" =~ ^[Yy]$ ]]; then
-        echo "Введите домен для настройки Nginx:"
-        read -r DOMAIN
-        echo "Введите IP-адрес для настройки Nginx:"
-        read -r IP
+        while [[ -z "$DOMAIN" ]]; do
+            echo "Введите домен для настройки Nginx (не может быть пустым):"
+            read -r DOMAIN
+        done
+
+        while [[ -z "$IP" ]]; do
+            echo "Введите IP-адрес для настройки Nginx (не может быть пустым):"
+            read -r IP
+        done
+        STATIC_SRC="$SERVICE_NAME:/app/static"
+        WEB_PROJECT_DIR="/var/www/$DOMAIN"
         NGINX_CONFIG_PATH="/etc/nginx/sites-available/$DOMAIN"
         NGINX_CONFIG_LINK="/etc/nginx/sites-enabled/$DOMAIN"
 
@@ -316,6 +323,12 @@ install_project() {
             echo "Ошибка: домен и IP-адрес не могут быть пустыми для настройки Nginx."
             exit 1
         fi
+
+        # Копируем статические файлы
+        echo "Копируем статические файлы из контейнера в $WEB_PROJECT_DIR..."
+        rm -rf "$WEB_PROJECT_DIR"
+        mkdir -p "$WEB_PROJECT_DIR"
+        docker cp "$STATIC_SRC" "$WEB_PROJECT_DIR"
 
         install_nginx
     else
