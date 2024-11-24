@@ -34,7 +34,7 @@ manage_nginx() {
     fi
 }
 
-if [ ! -f "$HOME/.acme.sh" ]; then
+if [ ! -d "$HOME/.acme.sh" ]; then
     ACME=0
 else
     ACME=1
@@ -89,6 +89,8 @@ EOF
 
 # Установка SSL сертефикатов
 install_ssl() {
+    echo
+    echo
     if [ "$ACME" -eq 0 ]; then
         echo "acme.sh не установлен"
         echo "Установите с помощью:"
@@ -133,6 +135,8 @@ install_ssl() {
 
 # Установка конфига nginx
 install_nginx() {
+    echo
+    echo
     if [ "$NGINX" -eq 0 ]; then
         echo "Nginx не найден. Устанавливаем..."
 
