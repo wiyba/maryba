@@ -42,6 +42,12 @@ else
     ACME=1
 fi
 
+if [ ! -f "$SERVICE_FILE" ]; then
+    SERVICE=0
+else
+    SERVICE=1
+fi
+
 if ! command -v docker &> /dev/null; then
     DOCKER=0
 else
@@ -198,6 +204,9 @@ EOF
 
 
 install_project() {
+    echo "Проверяем наличие старой версии и удаляем её..."
+    uninstall_project
+
     echo "Устанавливаем сайт..."
 
     # Проверка установки Docker
@@ -240,20 +249,6 @@ install_project() {
         echo "Git успешно установлен."
     else
         echo "Git уже установлен."
-    fi
-
-
-
-    # Проверка установки старых контейнеров
-    if docker ps -a --format '{{.Names}}' | grep -Eq "^$SERVICE_NAME\$"; then
-        echo "Удаляем старый контейнер $SERVICE_NAME..."
-        docker rm -f $SERVICE_NAME
-    fi
-
-    # Проверка установки старых контейнеров
-    if docker images --format '{{.Repository}}:{{.Tag}}' | grep -Eq "^$DOCKER_IMAGE\$"; then
-        echo "Удаляем старый образ $DOCKER_IMAGE..."
-        docker rmi $DOCKER_IMAGE
     fi
 
     # Репозиторий
@@ -330,17 +325,16 @@ install_project() {
 }
 
 
-uninstall_service() {
+uninstall_project() {
     echo "Удаляем сервис и проект..."
-    systemctl stop $SERVICE_NAME
-    systemctl disable $SERVICE_NAME
-    rm -f $SERVICE_FILE
-    systemctl daemon-reload
-    echo "Сервис $SERVICE_NAME удалён."
-
-    if docker ps -a --format '{{.Names}}' | grep -Eq "^$SERVICE_NAME\$"; then
-        echo "Удаляем контейнер $SERVICE_NAME..."
-        docker rm -f $SERVICE_NAME
+    if [ "$SERVICE" -eq 1 ]; then
+        systemctl stop $SERVICE_NAME
+        systemctl disable $SERVICE_NAME
+        rm -f $SERVICE_FILE
+        systemctl daemon-reload
+        echo "Сервис $SERVICE_NAME удалён."
+    else
+        echo "Сервис $SERVICE_NAME отсутствует."
     fi
 
     if docker images --format '{{.Repository}}:{{.Tag}}' | grep -Eq "^$DOCKER_IMAGE\$"; then
@@ -357,7 +351,7 @@ case $ACTION in
         install_project
         ;;
     uninstall)
-        uninstall_service
+        uninstall_project
         ;;
     *)
         echo "Невалидный параметр: $ACTION"
