@@ -285,11 +285,13 @@ install_project() {
     # Установка SSL
     if [[ "$install_ssl_answer" =~ ^[Yy]$ ]]; then
         while [[ -z "$DOMAIN" ]]; do
-            read -r -p "Введите домен для настройки Nginx (не может быть пустым): " IP
-            if [[ -z "$DOMAIN" ]]; then
-                echo "Домен не может быть пустым. Пожалуйста, повторите ввод."
-            fi
+            read -r -p "Введите домен для установки SSL (не может быть пустым): " DOMAIN
         done
+
+        if [[ -z "$DOMAIN" ]]; then
+            echo "Ошибка: домен не может быть пустым для установки SSL."
+            exit 1
+        fi
 
         install_ssl
 
@@ -304,28 +306,22 @@ install_project() {
     # Настройка Nginx
     if [[ "$install_nginx_answer" =~ ^[Yy]$ ]]; then
         while [[ -z "$DOMAIN" ]]; do
-            read -r -p "Введите домен для настройки Nginx (не может быть пустым): " IP
-            if [[ -z "$DOMAIN" ]]; then
-                echo "Домен не может быть пустым. Пожалуйста, повторите ввод."
-            fi
+            read -r -p "Введите домен для настройки Nginx (не может быть пустым): " DOMAIN
         done
 
         while [[ -z "$IP" ]]; do
             read -r -p "Введите IP-адрес для настройки Nginx (не может быть пустым): " IP
-            if [[ -z "$IP" ]]; then
-                echo "IP-адрес не может быть пустым. Пожалуйста, повторите ввод."
-            fi
         done
-
-        STATIC_SRC="$SERVICE_NAME:/app/static"
-        WEB_PROJECT_DIR="/var/www/$DOMAIN"
-        NGINX_CONFIG_PATH="/etc/nginx/sites-available/$DOMAIN"
-        NGINX_CONFIG_LINK="/etc/nginx/sites-enabled/$DOMAIN"
 
         if [[ -z "$DOMAIN" || -z "$IP" ]]; then
             echo "Ошибка: домен и IP-адрес не могут быть пустыми для настройки Nginx."
             exit 1
         fi
+
+        STATIC_SRC="$SERVICE_NAME:/app/static"
+        WEB_PROJECT_DIR="/var/www/$DOMAIN"
+        NGINX_CONFIG_PATH="/etc/nginx/sites-available/$DOMAIN"
+        NGINX_CONFIG_LINK="/etc/nginx/sites-enabled/$DOMAIN"
 
         # Копируем статические файлы
         echo "Копируем статические файлы из контейнера в $WEB_PROJECT_DIR..."
