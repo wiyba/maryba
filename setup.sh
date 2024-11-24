@@ -93,6 +93,7 @@ install_ssl() {
     echo
     if [ "$ACME" -eq 0 ]; then
         echo "acme.sh не установлен"
+        echo
         echo "Установите с помощью:"
         echo "curl https://get.acme.sh | sh -s email=EMAIL"
         return 1
@@ -278,16 +279,13 @@ install_project() {
     echo
     echo
 
-    echo "Хотите ли вы автоматически установить SSL для $DOMAIN? [y/N]:"
-    read -r install_ssl_answer
-    echo "Хотите ли вы автоматически настроить nginx для $DOMAIN на $IP? (вам нужен установленный nginx) [y/N]:"
-    read -r install_nginx_answer
+    read -r -p "Хотите ли вы автоматически установить SSL? [y/N]: " install_ssl_answer
+    read -r -p "Хотите ли вы автоматически настроить nginx? [y/N]: " install_nginx_answer
 
     # Установка SSL
     if [[ "$install_ssl_answer" =~ ^[Yy]$ ]]; then
         while [[ -z "$DOMAIN" ]]; do
-            echo "Введите домен для установки SSL (не может быть пустым):"
-            read -r DOMAIN
+            read -r -p "Введите домен для установки SSL (не может быть пустым): " DOMAIN
         done
 
         if [[ -z "$DOMAIN" ]]; then
@@ -303,13 +301,11 @@ install_project() {
     # Настройка Nginx
     if [[ "$install_nginx_answer" =~ ^[Yy]$ ]]; then
         while [[ -z "$DOMAIN" ]]; do
-            echo "Введите домен для настройки Nginx (не может быть пустым):"
-            read -r DOMAIN
+            read -r -p "Введите домен для настройки Nginx (не может быть пустым): " DOMAIN
         done
 
         while [[ -z "$IP" ]]; do
-            echo "Введите IP-адрес для настройки Nginx (не может быть пустым):"
-            read -r IP
+            read -r -p "Введите IP-адрес для настройки Nginx (не может быть пустым): " IP
         done
         STATIC_SRC="$SERVICE_NAME:/app/static"
         WEB_PROJECT_DIR="/var/www/$DOMAIN"
