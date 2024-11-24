@@ -285,28 +285,38 @@ install_project() {
     # Установка SSL
     if [[ "$install_ssl_answer" =~ ^[Yy]$ ]]; then
         while [[ -z "$DOMAIN" ]]; do
-            read -r -p "Введите домен для установки SSL (не может быть пустым): " DOMAIN
+            read -r -p "Введите домен для настройки Nginx (не может быть пустым): " IP
+            if [[ -z "$DOMAIN" ]]; then
+                echo "Домен не может быть пустым. Пожалуйста, повторите ввод."
+            fi
         done
 
-        if [[ -z "$DOMAIN" ]]; then
-            echo "Ошибка: домен не может быть пустым для установки SSL."
-            exit 1
-        fi
-
         install_ssl
+
+        echo
+        echo
     else
         echo "Установка SSL пропущена."
+        echo
+        echo
     fi
 
     # Настройка Nginx
     if [[ "$install_nginx_answer" =~ ^[Yy]$ ]]; then
         while [[ -z "$DOMAIN" ]]; do
-            read -r -p "Введите домен для настройки Nginx (не может быть пустым): " DOMAIN
+            read -r -p "Введите домен для настройки Nginx (не может быть пустым): " IP
+            if [[ -z "$DOMAIN" ]]; then
+                echo "Домен не может быть пустым. Пожалуйста, повторите ввод."
+            fi
         done
 
         while [[ -z "$IP" ]]; do
             read -r -p "Введите IP-адрес для настройки Nginx (не может быть пустым): " IP
+            if [[ -z "$IP" ]]; then
+                echo "IP-адрес не может быть пустым. Пожалуйста, повторите ввод."
+            fi
         done
+
         STATIC_SRC="$SERVICE_NAME:/app/static"
         WEB_PROJECT_DIR="/var/www/$DOMAIN"
         NGINX_CONFIG_PATH="/etc/nginx/sites-available/$DOMAIN"
@@ -324,8 +334,12 @@ install_project() {
         docker cp "$STATIC_SRC" "$WEB_PROJECT_DIR"
 
         install_nginx
+        echo
+        echo
     else
         echo "Настройка Nginx пропущена."
+        echo
+        echo
     fi
     docker logs $SERVICE_NAME
 }
