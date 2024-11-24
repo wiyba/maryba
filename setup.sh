@@ -270,14 +270,7 @@ install_project() {
     systemctl enable $SERVICE_NAME
     systemctl start $SERVICE_NAME
 
-    # Копируем статические файлы
-    echo "Копируем статические файлы из контейнера в $WEB_PROJECT_DIR..."
-    rm -rf "$WEB_PROJECT_DIR"
-    mkdir -p "$WEB_PROJECT_DIR"
-    docker cp "$STATIC_SRC" "$WEB_PROJECT_DIR"
-
     echo "Сервис $SERVICE_NAME установлен и запущен! Сайт доступен на http://localhost:$PORT"
-    docker logs $SERVICE_NAME
     echo
     echo
 
@@ -334,7 +327,7 @@ install_project() {
     else
         echo "Настройка Nginx пропущена."
     fi
-
+    docker logs $SERVICE_NAME
 }
 
 
