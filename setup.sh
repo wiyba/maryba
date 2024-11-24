@@ -129,7 +129,7 @@ install_ssl() {
 
 # Установка конфига nginx
 install_nginx() {
-    if [ "$NGINX" -eq 1 ]; then
+    if [ "$NGINX" -eq 0 ]; then
         echo "Nginx не найден. Устанавливаем..."
 
         if [[ -f /etc/debian_version ]]; then
@@ -201,7 +201,7 @@ install_project() {
     echo "Устанавливаем сайт..."
 
     # Проверка установки Docker
-    if [ "$DOCKER" -eq 1 ]; then
+    if [ "$DOCKER" -eq 0 ]; then
         echo "Docker не найден. Устанавливаем..."
         curl -fsSL https://get.docker.com | bash
         sudo systemctl start docker
@@ -211,7 +211,7 @@ install_project() {
     fi
 
     # Проверка установки Docker Compose
-    if [ "$DOCKER_COMP" -eq 1 ]; then
+    if [ "$DOCKER_COMP" -eq 0 ]; then
         echo "Docker Compose не найден. Устанавливаем..."
         sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
         sudo chmod +x /usr/local/bin/docker-compose
@@ -220,7 +220,7 @@ install_project() {
     fi
 
     # Проверка установки Git
-    if [ "$GIT" -eq 1 ]; then
+    if [ "$GIT" -eq 0 ]; then
         echo "Git не установлен. Устанавливаем..."
 
         if [[ -f /etc/debian_version ]]; then
