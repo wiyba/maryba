@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
+import shutil
 import os
 import asyncio
 
@@ -20,25 +21,39 @@ app.add_middleware(
     same_site="strict"
 )
 
+
 @app.on_event("startup")
 async def startup():
-    pm3_answer = input("Хотите ли вы пересобрать Proxmark3? [Y/N (enter to skip)]: ")
-    if pm3_answer == "Y" or pm3_answer == "y":
-        proxmark_build()
     from app.database import init_db
     init_db()
+
     from app.routes import main, auth, onvif, gallery
     app.include_router(main.router)
     app.include_router(auth.router)
     app.include_router(onvif.router)
     app.include_router(gallery.router)
+
+    print()
     print("Модули импортированы успешно")
     print("Вы получите секрет для регистрации при переходе на ./register")
-    asyncio.create_task(start_reader_task())
+    print()
+
+    asyncio.create_task(handle_proxmark_build_task())
 
 @app.on_event("shutdown")
 async def shutdown():
     print("Успешно остановлено")
 
-async def start_reader_task():
+
+async def handle_proxmark_build_task():
+    pm3_answer = input("Хотите ли вы забилдить Proxmark3? [Y/N (enter to skip)]: ")
+    if pm3_answer in ("Y", "y"):
+        if not shutil.which("make"):
+            print('"make" не найдена. Билд Proxmark3 невозможен.')
+            return
+        try:
+            await proxmark_build()
+        except Exception as e:
+            print(f"Ошибка при выполнении сборки Proxmark3: {e}")
     await asyncio.to_thread(start_reader)
+
