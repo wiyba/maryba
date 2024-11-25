@@ -1,9 +1,11 @@
 from app.config import config
+from app.utils.pm_charge import start_reader
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 import os
+import asyncio
 
 app = FastAPI()
 templates = Jinja2Templates(directory=config.TEMPLATES_DIR)
@@ -28,7 +30,11 @@ async def startup():
     app.include_router(gallery.router)
     print("Модули импортированы успешно")
     print("Вы получите секрет для регистрации при переходе на ./register")
+    asyncio.create_task(start_reader_task())
 
 @app.on_event("shutdown")
 async def shutdown():
     print("Успешно остановлено")
+
+async def start_reader_task():
+    await asyncio.to_thread(start_reader)

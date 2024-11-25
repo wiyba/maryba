@@ -1,0 +1,4 @@
+[submodule "app/api/new-magic4pm3"]
+	path = app/api/new-magic4pm3
+	url = https://github.com/team-orangeBlue/new-magic4pm3.git
+	branch = vos5

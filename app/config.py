@@ -13,6 +13,7 @@ class Config:
     VIDEOS_DIR = os.path.join(STATIC_DIR, "videos")  # Папка с видео
     JS_DIR = os.path.join(STATIC_DIR, "js")  # Папка с JS
     STYLE_DIR = os.path.join(STATIC_DIR, "style")  # Папка с CSS
+    CLIENT_DIR = os.path.join(STATIC_DIR, "client")
 
     # Пути к файлам
     FUNNY_VIDEO = os.path.join(VIDEOS_DIR, "harehareukaidansu.mp4")  # Путь к видео
