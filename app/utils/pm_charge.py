@@ -1,9 +1,15 @@
 from app.api.proxmark import execute_read
+import os
 import time
 
 # Скрипт для чтения информации с проксмарка и последующего открытия двери
 def start_reader():
     while True:
+        if not os.path.exists("./app/api/new-magic4pm3/client/proxmark3"):
+            print("Билд proxmark3 отсутствует: функция считывателя не была загружена.")
+            print()
+            break
+
         print("Ожидание метки...")
         output, error = execute_read("hf 14a reader")
 

@@ -9,7 +9,7 @@ def get_current_user(request: Request):
     user = request.session.get('user')
     token = request.session.get('token')
     if not user or not token:
-        raise HTTPException(status_code=401, detail="Необходима авторизация")
+        raise HTTPException(status_code=401)
 
     conn = sqlite3.connect(config.DATABASE)
     cursor = conn.cursor()

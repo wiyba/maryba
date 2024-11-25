@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>!!!TITTLE!!!</title>
+    <title>Error {{ number }}</title>
     <link rel="icon" type="image/png" href="/static/images/onvif.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -16,36 +16,59 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            color: #f0f0f0;
+        }
+
+        .container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(145deg, #8B3434, #561A1A);
+            border-radius: 15px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            border: 2px solid #D55B5B;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            box-sizing: border-box;
+            text-align: center;
+            animation: fadeIn 1.3s ease-in-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
         }
 
         .error-message {
-            text-align: center;
-            color: #f0f0f0;
-            padding: 20px;
+            color: #EDEDED;
         }
 
         .error-message h3 {
-            font-size: 72px;
+            font-size: 36px;
             font-weight: bold;
-            color: #ff4d4d;
+            color: #EDEDED;
             margin: 0;
         }
 
         .error-message h2 {
-            font-size: 36px;
+            font-size: 18px;
             font-weight: 600;
             margin-top: 10px;
-            color: #ffffff;
+            color: #F5F5F5;
         }
 
         .home-button {
             position: absolute;
             top: 10px;
             right: 10px;
-            width: 50px;
-            height: 50px;
-            background-color: #4CAF50;
+            width: 40px;
+            height: 40px;
+            background-color: #D55B5B;
             color: white;
             border-radius: 50%;
             display: flex;
@@ -57,23 +80,25 @@
         }
 
         .home-button:hover {
-            background-color: #313131;
+            background-color: #5B2B2B;
             transform: scale(1.1);
         }
 
         .home-button img {
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="error-message">
-        <h3>!!!ERROR_NUM!!!</h3>
-        <h2>!!!ERROR!!!</h2>
+    <div class="container">
+        <div class="error-message">
+            <h3>Error {{ number }}</h3>
+            <h2>{{ type }}</h2>
+        </div>
+        <a href="./" class="home-button">
+            <img src="/static/images/home.png" alt="Home Icon">
+        </a>
     </div>
-    <a href="./" class="home-button">
-        <img src="/static/images/home.png" alt="Home Icon">
-    </a>
 </body>
 </html>

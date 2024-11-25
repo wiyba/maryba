@@ -1,9 +1,12 @@
 from app.config import config
+from app.utils.exception_handler import render_error_page
 from app.utils.pm_charge import start_reader
 from app.api.proxmark import proxmark_build
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
 import shutil
 import os
@@ -11,7 +14,8 @@ import asyncio
 
 app = FastAPI()
 templates = Jinja2Templates(directory=config.TEMPLATES_DIR)
-app.mount("/static", StaticFiles(directory=config.STATIC_DIR), name="static")
+app.mount("/static", StaticFiles(directory=config.STATIC_DIR, html=True), name="static")
+
 
 app.add_middleware(
     SessionMiddleware,
@@ -21,7 +25,7 @@ app.add_middleware(
     same_site="strict"
 )
 
-
+# Выполняется при запуске
 @app.on_event("startup")
 async def startup():
     from app.database import init_db
@@ -40,20 +44,47 @@ async def startup():
 
     asyncio.create_task(handle_proxmark_build_task())
 
+# Выполняется при остановке
 @app.on_event("shutdown")
 async def shutdown():
     print("Успешно остановлено")
 
-
+# Билд софта для proxmark3
 async def handle_proxmark_build_task():
-    pm3_answer = input("Хотите ли вы забилдить Proxmark3? [Y/N (enter to skip)]: ")
+    pm3_answer = input("Хотите ли вы забилдить proxmark3? [Y/N (enter to skip)]: ")
     if pm3_answer in ("Y", "y"):
         if not shutil.which("make"):
-            print('"make" не найдена. Билд Proxmark3 невозможен.')
+            print('"make" не найдена. Билд proxmark3 невозможен.')
             return
         try:
             await proxmark_build()
         except Exception as e:
-            print(f"Ошибка при выполнении сборки Proxmark3: {e}")
+            print(f"Ошибка при выполнении сборки proxmark3: {e}")
     await asyncio.to_thread(start_reader)
+
+# Настройка кастомных страниц ошибок
+@app.exception_handler(Exception)
+async def internal_server_error_handler(request: Request, exc: Exception):
+    return render_error_page(request, 500, "Internal Server Error")
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 404:
+        return render_error_page(request, 404, "Not Found")
+    elif exc.status_code == 401:
+        return render_error_page(request, 401, "Unauthorized")
+    elif exc.status_code == 403:
+        return render_error_page(request, 403, "Forbidden")
+    elif exc.status_code == 502:
+        return render_error_page(request, 502, "Bad Gateway")
+    elif exc.status_code == 503:
+        return render_error_page(request, 503, "Service Unavailable")
+    elif exc.status_code == 504:
+        return render_error_page(request, 504, "Gateway Timeout")
+    elif 100 >= exc.status_code >= 559:
+        return render_error_page(request, exc.status_code, "Unknown Error Code")
+    return HTMLResponse(
+        content=f"<h1>Error {exc.status_code}</h1><p>{exc.detail}</p>",
+        status_code=exc.status_code,
+    )
 
