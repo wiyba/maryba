@@ -1,5 +1,6 @@
 from app.config import config
 from app.utils.pm_charge import start_reader
+from app.api.proxmark import proxmark_build
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
@@ -21,6 +22,9 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup():
+    pm3_answer = input("Хотите ли вы пересобрать Proxmark3? [Y/N (enter to skip)]: ")
+    if pm3_answer == "Y" or pm3_answer == "y":
+        proxmark_build()
     from app.database import init_db
     init_db()
     from app.routes import main, auth, onvif, gallery

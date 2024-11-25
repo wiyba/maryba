@@ -1,6 +1,7 @@
 from app.api.proxmark import execute_read
 import time
 
+# Скрипт для чтения информации с проксмарка и последующего открытия двери
 def start_reader():
     while True:
         print("Ожидание метки...")

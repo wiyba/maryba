@@ -1,12 +1,11 @@
 import os
 import pexpect
 
-def proxmark_repo():
-    os.system('cd ./app/api/new-magic4pm3')
-    os.system('git pull')
+# Ребилд софта для проксмарка
+def proxmark_build():
+    os.system('cd ./app/api/new-magic4pm3 && git pull && make -j client')
 
-    os.system('make -j client')
-
+# Использование команд для проксмарка
 def execute_read(command):
     client_path = "./app/api/new-magic4pm3/client/proxmark3"
     device_port = "/dev/ttyACM0"
