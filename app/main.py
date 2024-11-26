@@ -1,6 +1,6 @@
 from app.config import config
-from app.utils.exception_handler import render_error_page
-from app.utils.pm_charge import start_reader
+from app.utils.exceptions import render_error_page
+from app.utils.charge import start_reader
 from app.api.proxmark import proxmark_build
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
@@ -10,6 +10,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
 import shutil
 import os
+import time
 import asyncio
 
 app = FastAPI()
@@ -31,9 +32,10 @@ async def startup():
     from app.database import init_db
     init_db()
 
-    from app.routes import main, auth, onvif, gallery
+    from app.routes import main, auth, profile, onvif, gallery
     app.include_router(main.router)
     app.include_router(auth.router)
+    app.include_router(profile.router)
     app.include_router(onvif.router)
     app.include_router(gallery.router)
 
@@ -42,7 +44,7 @@ async def startup():
     print("Вы получите секрет для регистрации при переходе на ./register")
     print()
 
-    asyncio.create_task(handle_proxmark_build_task())
+    # asyncio.create_task(handle_proxmark_build_task()) (если необходимо забилдить proxmark3)
 
 # Выполняется при остановке
 @app.on_event("shutdown")
@@ -51,15 +53,13 @@ async def shutdown():
 
 # Билд софта для proxmark3
 async def handle_proxmark_build_task():
-    pm3_answer = input("Хотите ли вы забилдить proxmark3? [Y/N (enter to skip)]: ")
-    if pm3_answer in ("Y", "y"):
-        if not shutil.which("make"):
-            print('"make" не найдена. Билд proxmark3 невозможен.')
-            return
-        try:
-            await proxmark_build()
-        except Exception as e:
-            print(f"Ошибка при выполнении сборки proxmark3: {e}")
+    if not shutil.which("make"):
+        print('"make" не найдена. Билд proxmark3 невозможен.')
+        return
+    try:
+        await proxmark_build()
+    except Exception as e:
+        print(f"Ошибка при выполнении сборки proxmark3: {e}")
     await asyncio.to_thread(start_reader)
 
 # Настройка кастомных страниц ошибок

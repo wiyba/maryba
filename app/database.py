@@ -6,6 +6,7 @@ def init_db():
     conn = sqlite3.connect(config.DATABASE)
     cursor = conn.cursor()
 
+    # Таблица пользователей
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY,
@@ -14,6 +15,7 @@ def init_db():
     )
     """)
 
+    # Таблица сессий
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS sessions (
         username TEXT PRIMARY KEY,
@@ -21,14 +23,14 @@ def init_db():
     )
     """)
 
+    # Таблица proxmark
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS cameras (
+    CREATE TABLE IF NOT EXISTS proxmark (
         id INTEGER PRIMARY KEY,
         username TEXT NOT NULL,
-        ip TEXT NOT NULL,
-        login TEXT NOT NULL,
-        password TEXT NOT NULL,
-        FOREIGN KEY (username) REFERENCES users(username)
+        uid TEXT NOT NULL,
+        counter INTEGER DEFAULT 0,
+        FOREIGN KEY (username) REFERENCES users (username)
     )
     """)
 
