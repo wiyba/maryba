@@ -1,22 +1,10 @@
 import re
 from app.api.proxmark import execute_read
 from app.config import config
-import RPi.GPIO as GPIO
 import sqlite3
 import os
 import time
 
-MAGNET_LOCK_PIN = 18
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(MAGNET_LOCK_PIN, GPIO.OUT)
-
-def lock():
-    GPIO.output(MAGNET_LOCK_PIN, GPIO.HIGH)
-    print("Магнитный замок закрыт")
-
-def unlock():
-    GPIO.output(MAGNET_LOCK_PIN, GPIO.LOW)
-    print("Магнитный замок открыт")
 
 # Получение никнейма
 def get_user_by_uid(uid):
@@ -112,11 +100,12 @@ def start_reader():
                     update_counter(uid, balance)
                 else:
                     print("Не удалось извлечь баланс из вывода.")
-                    unlock()
+
+
+
+
                     print("Дверь открыта!")
                     time.sleep(3)
-                    lock()
-                    GPIO.cleanup()
             else:
                 print("Не удалось списать проход:", charge_output or "Нет данных")
         time.sleep(0.5)
