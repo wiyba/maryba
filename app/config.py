@@ -3,25 +3,27 @@ import json
 import bcrypt
 
 class Config:
-    # Основные дирректории
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Текущая папка config.py
-    TEMPLATES_DIR = os.path.join(BASE_DIR, "../templates")  # Папка с шаблонами
-    STATIC_DIR = os.path.join(BASE_DIR, "../static")  # Папка со статикой
+    # Основная директория проекта
+    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # Путь к корню проекта
 
-    # Папки внутри static/
-    IMAGES_DIR = os.path.join(STATIC_DIR, "images")  # Папка с изображениями
+    # Директории для шаблонов и статики
+    TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")  # Папка с шаблонами
+    STATIC_DIR = os.path.join(BASE_DIR, "static")  # Папка со статикой
+
+    # Поддиректории внутри static/
+    IMAGES_DIR = os.path.join(STATIC_DIR, "favicon")  # Папка с изображениями
     VIDEOS_DIR = os.path.join(STATIC_DIR, "videos")  # Папка с видео
+    TS_DIR = os.path.join(STATIC_DIR, "ts") # Папка с TS
     JS_DIR = os.path.join(STATIC_DIR, "js")  # Папка с JS
     STYLE_DIR = os.path.join(STATIC_DIR, "style")  # Папка с CSS
-    CLIENT_DIR = os.path.join(STATIC_DIR, "client")
 
-    # Пути к файлам
+    # Пути к отдельным файлам
     FUNNY_VIDEO = os.path.join(VIDEOS_DIR, "harehareukaidansu.mp4")  # Путь к видео
 
     # Остальные ссылки
-    DATABASE = os.path.join(BASE_DIR, "../users.db")  # Путь к базе данных
+    DATABASE = os.path.join(BASE_DIR, "users.db")  # Путь к базе данных
     SESSION_SECRET = os.urandom(64)  # Секрет для сессий
-    SECURITY_KEY = os.urandom(16).hex() # Секрет для регистрации
+    SECURITY_KEY = os.urandom(16).hex()  # Секрет для регистрации
 
 
 class Password:

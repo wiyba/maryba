@@ -15,8 +15,9 @@ import asyncio
 
 app = FastAPI()
 templates = Jinja2Templates(directory=config.TEMPLATES_DIR)
-app.mount("/static", StaticFiles(directory=config.STATIC_DIR, html=True), name="static")
-
+app.mount("/static", StaticFiles(directory=config.STATIC_DIR), name="static")
+app.mount("/favicon", StaticFiles(directory=config.IMAGES_DIR), name="favicon")
+app.mount("/js", StaticFiles(directory=config.JS_DIR), name="js")
 
 app.add_middleware(
     SessionMiddleware,
@@ -31,6 +32,11 @@ app.add_middleware(
 async def startup():
     from app.database import init_db
     init_db()
+    print(config.BASE_DIR)  # Корневая директория проекта
+    print(config.TEMPLATES_DIR)  # Полный путь к папке templates
+    print(config.STATIC_DIR)  # Полный путь к папке static
+    print(config.IMAGES_DIR)  # Полный путь к папке static/favicon
+    print(config.FUNNY_VIDEO)  # Полный путь к файлу harehareukaidansu.mp4
 
     from app.routes import main, auth, profile, onvif, gallery
     app.include_router(main.router)
