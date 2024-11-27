@@ -37,6 +37,23 @@
             border-radius: 20px;
         }
 
+        .audio-player {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .audio-player audio {
+            width: 150px;
+        }
+
         .error-message {
             display: flex;
             flex-direction: column; /* Расположить элементы (заголовки) вертикально друг под другом */
@@ -93,13 +110,19 @@
 </head>
 <body>
     <div class="video-container">
-        <img class="video-stream" src="/onvif_source" alt="ONVIF Stream" onerror="showError()">
+        <img class="video-stream" src="/onvif_video" alt="ONVIF Stream" onerror="showError()">
         <a href="./" class="home-button">
             <img src="https://img.icons8.com/?size=100&id=1iF9PyJ2Thzo&format=png&color=FFFFFF" alt="Home Icon">
         </a>
         <div id="error-message" class="error-message" style="display: none;">
             <h3>No Signal</h3>
             <h2>ONVIF device was not found</h2>
+        </div>
+        <div class="audio-player">
+            <audio controls autoplay>
+                <source src="/onvif_audio" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
         </div>
     </div>
     <script src="/static/js/onvif-handler.js"></script>

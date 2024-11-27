@@ -1,11 +1,18 @@
-from app.config import onvif
+from fastapi import FastAPI, Request
+from fastapi.responses import StreamingResponse
 import cv2
 import subprocess
-from fastapi import Request
+from app.config import onvif
 
-ffmpeg_process = None
+# Глобальные переменные
+ffmpeg_process_video = None
+ffmpeg_process_audio = None
 streaming_active = False
 
+app = FastAPI()
+
+
+# Проверка доступности камеры
 def check_camera_availability():
     try:
         print("Проверка доступности камеры с помощью ffmpeg...")
@@ -30,19 +37,18 @@ def check_camera_availability():
         return False
 
 
-
-# Функция для запуска ffmpeg
+# Функция для запуска FFmpeg потоков
 async def start_ffmpeg():
-    global ffmpeg_process, streaming_active
+    global ffmpeg_process_video, ffmpeg_process_audio, streaming_active
     print("Проверка доступности камеры...")
 
     if not check_camera_availability():
         stop_ffmpeg()
         return
 
-    if ffmpeg_process is None or ffmpeg_process.poll() is not None:
-        print("Запуск ffmpeg...")
-        ffmpeg_process = subprocess.Popen([
+    if ffmpeg_process_video is None or ffmpeg_process_video.poll() is not None:
+        print("Запуск видео ffmpeg...")
+        ffmpeg_process_video = subprocess.Popen([
             'ffmpeg',
             '-rtsp_transport', 'tcp',
             '-fflags', 'nobuffer',
@@ -56,30 +62,40 @@ async def start_ffmpeg():
             '-q', '5',
             'udp://127.0.0.1:1234'
         ], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-        streaming_active = True
+
+    if ffmpeg_process_audio is None or ffmpeg_process_audio.poll() is not None:
+        print("Запуск аудио ffmpeg...")
+        ffmpeg_process_audio = subprocess.Popen([
+            'ffmpeg',
+            '-rtsp_transport', 'tcp',
+            '-i', onvif.rtsp_url,
+            '-vn',  # Только аудио
+            '-acodec', 'libmp3lame',
+            '-f', 'mp3',
+            'http://127.0.0.1:8001/audio'
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+
+    streaming_active = True
 
 
-
-
+# Функция для остановки FFmpeg потоков
 def stop_ffmpeg():
-    global ffmpeg_process, streaming_active
-    if isinstance(ffmpeg_process, subprocess.Popen):
-        try:
-            print("Остановка ffmpeg...")
-            ffmpeg_process.terminate()
-            ffmpeg_process.wait(timeout=5)
-        except Exception as e:
-            print(f"Ошибка при завершении ffmpeg: {e}. Пробуем kill()")
-            ffmpeg_process.kill()
-        finally:
-            ffmpeg_process = None
-            streaming_active = False
-    else:
-        print("Процесс ffmpeg не был запущен.")
+    global ffmpeg_process_video, ffmpeg_process_audio, streaming_active
+    for process in [ffmpeg_process_video, ffmpeg_process_audio]:
+        if isinstance(process, subprocess.Popen):
+            try:
+                print("Остановка ffmpeg...")
+                process.terminate()
+                process.wait(timeout=5)
+            except Exception as e:
+                print(f"Ошибка при завершении ffmpeg: {e}. Пробуем kill()")
+                process.kill()
+        process = None
+
+    streaming_active = False
 
 
-
-# Функция ffmpeg
+# Генерация видео потока для StreamingResponse
 async def video_stream(request: Request):
     global streaming_active
 
@@ -123,3 +139,21 @@ async def video_stream(request: Request):
         print("Видео поток завершён.")
 
 
+async def audio_stream():
+    def generate():
+        with subprocess.Popen([
+            'ffmpeg',
+            '-rtsp_transport', 'tcp',
+            '-i', onvif.rtsp_url,
+            '-vn',
+            '-acodec', 'libmp3lame',
+            '-f', 'mp3',
+            '-'
+        ], stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
+            while True:
+                data = process.stdout.read(1024)
+                if not data:
+                    break
+                yield data
+
+    return StreamingResponse(generate(), media_type="audio/mpeg")

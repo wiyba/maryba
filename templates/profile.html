@@ -156,17 +156,12 @@
             </div>
             <div class="button-container">
                 <a href="./" class="custom-button"><img src="/static/images/home.png" alt="Home Icon" class="icon-image"></a>
-                <a href="#" onclick="handleProfileSubmit(event)" class="custom-button"><img src="/static/images/arrow.png" alt="Submit Icon" class="icon-image"></a>
+                <button type="submit" class="custom-button">
+                    <img src="/static/images/arrow.png" alt="Submit Icon" class="icon-image">
+                </button>
             </div>
         </form>
     </div>
-    <script>
-        document.querySelectorAll('input[name="username"], input[name="password"]').forEach(input => {
-            input.addEventListener('input', () => {
-                input.value = input.value.replace(/[^A-Za-zА-Яа-я0-9_]/g, '');
-            });
-        });
-    </script>
     <script>
         const uidInput = document.getElementById('uid-input');
         uidInput.addEventListener('input', () => {
@@ -181,43 +176,6 @@
             uidInput.value = formattedValue;
         });
     </script>
-    <script>
-        async function handleProfileSubmit(event) {
-            event.preventDefault();
-
-            const uid = document.querySelector('input[name="uid"]').value;
-
-            if (uid === '') {
-                alert('All fields must be filled in');
-                event.preventDefault();
-                return;
-            }
-            else if (uid.length !== 11) {
-                alert('UID must be 8 characters long');
-                event.preventDefault();
-                return;
-            }
-
-
-            try {
-                const response = await fetch('/profile', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams({ uid })
-                });
-
-                if (response.ok) {
-                    window.location.href = "/";
-                } else {
-                    const errorData = await response.json();
-                    alert(errorData.detail);
-                }
-            } catch (error) {
-                console.error("Ошибка при изменении профиля:", error);
-            }
-        }
-    </script>
+    <script src="/static/js/profile-submit.js"></script>
 </body>
 </html>

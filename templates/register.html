@@ -151,7 +151,7 @@
             <div class="title">Sign Up</div>
             <a href="/login" class="log-button">Sign In</a>
         </div>
-        <form>
+        <form onsubmit="handleSignUp(event)">
             <div class="input-container" data-placeholder-right="4-18 chars">
                 <input type="text" name="username" placeholder="Username" maxlength="18" pattern="\w+" title="Only letters, numbers, and underscores are allowed. No spaces." required>
             </div>
@@ -163,7 +163,9 @@
             </div>
             <div class="button-container">
                 <a href="/" class="custom-button"><img src="/static/images/home.png" alt="Icon" class="icon-image"></a>
-                <a href="#" onclick="handleSignUp(event)" class="custom-button"><img src="/static/images/plus.png" alt="Icon" class="icon-image"></a>
+                <button type="submit" class="custom-button">
+                    <img src="/static/images/plus.png" alt="Register Icon" class="icon-image">
+                </button>
             </div>
         </form>
     </div>
