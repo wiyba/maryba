@@ -86,8 +86,42 @@ install_nginx() {
     STATIC_DIR="$PROJECT_DIR/app/static"
     mkdir -p "$STATIC_DIR"
 
-    SSL_PATH="/var/lib/$SERVICE_NAME/certs/fullchain.pem"
-    SSL_KEY="/var/lib/$SERVICE_NAME/certs/key.pem"
+    SSL_PATH="$CERTS_DIR/fullchain.pem"
+    SSL_KEY="$CERTS_DIR/key.pem"
+
+    if [[ ! -f "$SSL_PATH" || ! -f "$SSL_KEY" ]]; then
+        echo "Не найдены SSL сертификаты:"
+        [[ ! -f "$SSL_PATH" ]] && echo "- Отсутствует файл: $SSL_PATH"
+        [[ ! -f "$SSL_KEY" ]] && echo "- Отсутствует файл: $SSL_KEY"
+
+        echo
+        echo "Предлагается установить сертификаты с помощью команды:"
+        echo "$HOME/.acme.sh/acme.sh --set-default-ca --server letsencrypt \\"
+        echo "    --issue --standalone --force -d YOUR_DOMAIN \\"
+        echo "    --key-file $SSL_KEY \\"
+        echo "    --fullchain-file $SSL_PATH"
+        echo
+
+        read -r -p "Хотите ли вы установить сертификаты сейчас? [y/N]: " install_cert_answer
+
+        if [[ "$install_cert_answer" =~ ^[Yy]$ ]]; then
+            echo "Устанавливаем сертификаты..."
+            ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt \
+                --issue --standalone --force -d "$DOMAIN" \
+                --key-file "$SSL_KEY" \
+                --fullchain-file "$SSL_PATH" || {
+                    echo "Ошибка при установке сертификатов. Проверьте настройки и повторите попытку."
+                    exit 1
+                }
+            echo "Сертификаты успешно установлены."
+        else
+            echo "Сертификаты не установлены. Завершаем выполнение."
+            exit 1
+        fi
+    fi
+
+    SSL_PATH="$CERTS_DIR/fullchain.pem"
+    SSL_KEY="$CERTS_DIR/key.pem"
     NGINX_CONFIG_PATH="/etc/nginx/sites-available/$DOMAIN.conf"
     NGINX_CONFIG_LINK="/etc/nginx/sites-enabled/$DOMAIN.conf"
 
@@ -124,7 +158,8 @@ EOF
     ln -s "$NGINX_CONFIG_PATH" "$NGINX_CONFIG_LINK"
 
     echo "Проверяем конфигурацию Nginx..."
-    nginx -t && manage_nginx restart
+    nginx -t
+    manage_nginx restart
 }
 
 install_project() {
@@ -162,7 +197,7 @@ uninstall_project() {
         rm -f "$SERVICE_FILE"
         systemctl daemon-reload
     fi
-    rm -rf "$PROJECT_DIR"
+    find "$PROJECT_DIR" -mindepth 1 -maxdepth 1 ! -name "certs" -exec rm -rf {} +
     echo "Удалено."
 }
 
