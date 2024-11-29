@@ -197,7 +197,13 @@ uninstall_project() {
         rm -f "$SERVICE_FILE"
         systemctl daemon-reload
     fi
-    find "$PROJECT_DIR" -mindepth 1 -maxdepth 1 ! -name "certs" ! -name ".git" -exec rm -rf {} +
+    
+    if [[ -d "$PROJECT_DIR" ]]; then
+        find "$PROJECT_DIR" -mindepth 1 -maxdepth 1 ! -name "certs" ! -name ".git" -exec rm -rf {} +
+    else
+        echo "Директория $PROJECT_DIR не существует."
+    fi
+
     echo "Удалено."
 }
 
