@@ -48,6 +48,7 @@ manage_nginx() {
 
 create_service() {
     echo "Создаём systemd-сервис для Uvicorn..."
+    rm -rf "$PROJECT_DIR/venv"
     mkdir -p "$PROJECT_DIR"
     python3 -m venv "$PROJECT_DIR/venv"
     source "$PROJECT_DIR/venv/bin/activate"
@@ -130,6 +131,7 @@ install_project() {
 
     echo "Устанавливаем проект..."
     check_and_install git git
+    check_and_install python python
 
     if [ ! -d "$PROJECT_DIR" ]; then
         git clone https://github.com/wiyba/maryba.git "$PROJECT_DIR"
