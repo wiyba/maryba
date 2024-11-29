@@ -197,7 +197,7 @@ uninstall_project() {
         rm -f "$SERVICE_FILE"
         systemctl daemon-reload
     fi
-    find "$PROJECT_DIR" -mindepth 1 -maxdepth 1 ! -name "certs" -exec rm -rf {} +
+    find "$PROJECT_DIR" -mindepth 1 -maxdepth 1 ! -name "certs" ! -name ".git" -exec rm -rf {} +
     echo "Удалено."
 }
 
