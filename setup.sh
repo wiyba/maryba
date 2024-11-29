@@ -1,5 +1,5 @@
 #!/bin/bash
-cd ~ || exit
+cd / || exit
 LOGFILE="/var/log/maryba.log"
 exec > >(tee -a "$LOGFILE") 2>&1
 trap 'echo "Ошибка на строке $LINENO: Команда завершилась с кодом $?. Завершаем скрипт." >&2' ERR
