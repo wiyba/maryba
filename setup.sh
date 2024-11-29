@@ -86,6 +86,8 @@ install_nginx() {
     STATIC_DIR="$PROJECT_DIR/app/static"
     mkdir -p "$STATIC_DIR"
 
+    SSL_PATH="/var/lib/$SERVICE_NAME/certs/fullchain.pem"
+    SSL_KEY="/var/lib/$SERVICE_NAME/certs/key.pem"
     NGINX_CONFIG_PATH="/etc/nginx/sites-available/$DOMAIN.conf"
     NGINX_CONFIG_LINK="/etc/nginx/sites-enabled/$DOMAIN.conf"
 
@@ -118,7 +120,7 @@ server {
     }
 }
 EOF
-
+    rm "$NGINX_CONFIG_LINK"
     ln -s "$NGINX_CONFIG_PATH" "$NGINX_CONFIG_LINK"
 
     echo "Проверяем конфигурацию Nginx..."
@@ -131,7 +133,7 @@ install_project() {
 
     echo "Устанавливаем проект..."
     check_and_install git git
-    check_and_install python python
+    check_and_install python3 python3
 
     if [ ! -d "$PROJECT_DIR" ]; then
         git clone https://github.com/wiyba/maryba.git "$PROJECT_DIR"
