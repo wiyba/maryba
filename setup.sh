@@ -171,7 +171,7 @@ install_project() {
     check_and_install python3 python3
 
     if [ ! -d "$PROJECT_DIR" ]; then
-        git clone https://github.com/wiyba/maryba.git "$PROJECT_DIR"
+        git clone https://github.com/wiyba/maryba "$PROJECT_DIR"
     else
         echo "Обновляем проект..."
         cd "$PROJECT_DIR" || exit
