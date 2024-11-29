@@ -77,13 +77,13 @@ EOF
 install_nginx() {
     check_and_install nginx nginx
 
+    while [[ -z "$DOMAIN" ]]; do
+        read -r -p "Введите домен для настройки Nginx (не может быть пустым): " DOMAIN
+    done
+
     echo "Создаём конфигурацию Nginx..."
     STATIC_DIR="$PROJECT_DIR/app/static"
     mkdir -p "$STATIC_DIR"
-    DOMAIN=${DOMAIN:-example.com}
-    IP=${IP:-127.0.0.1}
-    SSL_PATH=${SSL_PATH:-/path/to/fullchain.pem}
-    SSL_KEY=${SSL_KEY:-/path/to/key.pem}
 
     NGINX_CONFIG_PATH="/etc/nginx/sites-available/$DOMAIN.conf"
     NGINX_CONFIG_LINK="/etc/nginx/sites-enabled/$DOMAIN.conf"

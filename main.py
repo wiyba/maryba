@@ -20,7 +20,7 @@ def setup_logger():
     console_handler.setLevel(logging.DEBUG if DEBUG else logging.INFO)
 
     formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        "%(levelname)s:     %(message)s"
     )
     console_handler.setFormatter(formatter)
 
@@ -46,8 +46,8 @@ def validate_cert_and_key(cert_file_path, key_file_path):
         context = ssl.create_default_context()
         context.load_cert_chain(certfile=cert_file_path, keyfile=key_file_path)
     except ssl.SSLError as e:
-        logger.error(f"SSL Error: {e}")
-        raise ValueError(f"SSL Error: {e}")
+        logger.error(f"Ошибка SSL: {e}")
+        raise ValueError(f"Ошибка SSL: {e}")
 
     try:
         with open(cert_file_path, 'rb') as cert_file:
@@ -55,18 +55,18 @@ def validate_cert_and_key(cert_file_path, key_file_path):
             cert = x509.load_pem_x509_certificate(cert_data, default_backend())
 
         if cert.issuer == cert.subject:
-            logger.warning("The certificate is self-signed and not issued by a trusted CA.")
-            raise ValueError("The certificate is self-signed and not issued by a trusted CA.")
+            logger.warning("Предоставленный вами сертефикат не является доверенным.")
+            raise ValueError("Предоставленный вами сертефикат не является доверенным.")
     except Exception as e:
-        logger.error(f"Certificate verification failed: {e}")
-        raise ValueError(f"Certificate verification failed: {e}")
+        logger.error(f"Проверка сертефиката не удалась: {e}")
+        raise ValueError(f"Проверка сертефиката не удалась: {e}")
 
 
 if __name__ == "__main__":
     bind_args = {}
 
     if UVICORN_SSL_CERTFILE and UVICORN_SSL_KEYFILE:
-        logger.info("Validating SSL certificates...")
+        logger.info("Проверяем SSL сертефикаты...")
         validate_cert_and_key(UVICORN_SSL_CERTFILE, UVICORN_SSL_KEYFILE)
 
         bind_args['ssl_certfile'] = UVICORN_SSL_CERTFILE
@@ -81,7 +81,7 @@ if __name__ == "__main__":
         if UVICORN_UDS:
             bind_args['uds'] = UVICORN_UDS
         else:
-            logger.warning(f"""{click.style('IMPORTANT!', blink=True, bold=True, fg="yellow")} Running without SSL certificates. Access will be limited to localhost (127.0.0.1).""")
+            logger.warning(f"""{click.style('ВАЖНО! Запущено без SSL сертефикатов. Доступ будет ограничен для localhost (127.0.0.1).', blink=True, bold=True, fg="yellow")}""")
             bind_args['host'] = '127.0.0.1'
             bind_args['port'] = UVICORN_PORT
 
@@ -90,7 +90,7 @@ if __name__ == "__main__":
         bind_args['host'] = '0.0.0.0'
 
     try:
-        logger.info("Starting Uvicorn server...")
+        logger.info("Запускаем сервер Uvicorn...")
         uvicorn.run(
             "app.main:app",
             **bind_args,
@@ -99,4 +99,4 @@ if __name__ == "__main__":
             log_level=logging.DEBUG if DEBUG else logging.INFO
         )
     except FileNotFoundError as e:
-        logger.error(f"Error occurred: {e}")
+        logger.error(f"При запуске произошла ошибка: {e}")
