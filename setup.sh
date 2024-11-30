@@ -9,7 +9,7 @@ SERVICE_FILE="/etc/systemd/system/$SERVICE_NAME.service"
 PORT="8000"
 
 PROJECT_DIR="/var/lib/$SERVICE_NAME"
-CERTS_DIR="$PROJECT_DIR/certs"
+CERTS_DIR="$PROJECT_DIR/../${SERVICE_NAME}_certs"
 STATIC_DIR="$PROJECT_DIR/app/static"
 
 ACTION=$1
@@ -202,12 +202,8 @@ uninstall_project() {
         rm -f "$SERVICE_FILE"
         systemctl daemon-reload
     fi
-    
-    if [[ -d "$PROJECT_DIR" ]]; then
-        find "$PROJECT_DIR" -mindepth 1 -maxdepth 1 ! -name "certs" -exec rm -rf {} +
-    else
-        echo "Директория $PROJECT_DIR не существует."
-    fi
+
+    rm -rf "$PROJECT_DIR"
 
     echo "Удалено."
 }
