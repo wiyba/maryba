@@ -186,8 +186,8 @@ install_project() {
     systemctl enable "$SERVICE_NAME"
     systemctl start "$SERVICE_NAME"
 
-    echo "Хотите настроить Nginx? [y/N]: "
     while [[ ! "$install_nginx_answer" =~ ^[YyNn]$ ]]; do
+        echo "Хотите настроить Nginx? [y/N]: "
         read -r install_nginx_answer
     done
     if [[ "$install_nginx_answer" =~ ^[Yy]$ ]]; then
