@@ -48,17 +48,6 @@ manage_nginx() {
 
 create_service() {
     echo "Создаём systemd-сервис для Uvicorn..."
-    rm -rf "$PROJECT_DIR/venv"
-    mkdir -p "$PROJECT_DIR"
-
-    git clone https://github.com/wiyba/maryba "$PROJECT_DIR"
-
-
-    python3 -m venv "$PROJECT_DIR/venv"
-    source "$PROJECT_DIR/venv/bin/activate"
-    cd $PROJECT_DIR || exit
-    pip install --no-cache-dir --upgrade pip
-    pip install -r "$PROJECT_DIR/requirements.txt" || { echo "Ошибка установки Python-зависимостей"; exit 1; }
     cat > "$SERVICE_FILE" <<EOF
 [Unit]
 Description=Maryba FastAPI Service
@@ -175,9 +164,22 @@ install_project() {
     echo "Проверяем наличие старой версии и удаляем её..."
     uninstall_project
 
+    mkdir -p "$PROJECT_DIR"
+
     echo "Устанавливаем проект..."
     check_and_install git git
     check_and_install python3 python3
+
+    # Клонирование репозитория
+    git clone https://github.com/wiyba/maryba "$PROJECT_DIR"
+    cp "$PROJECT_DIR/.env.example" "$PROJECT_DIR/.env"
+
+    # Активация виртуального окружения
+    python3 -m venv "$PROJECT_DIR/venv"
+    source "$PROJECT_DIR/venv/bin/activate"
+    cd $PROJECT_DIR || exit
+    pip install --no-cache-dir --upgrade pip
+    pip install -r "$PROJECT_DIR/requirements.txt" || { echo "Ошибка установки Python-зависимостей"; exit 1; }
 
     create_service
     systemctl enable "$SERVICE_NAME"
