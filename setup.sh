@@ -49,16 +49,12 @@ manage_nginx() {
 create_service() {
     echo "Создаём systemd-сервис для Uvicorn..."
     rm -rf "$PROJECT_DIR/venv"
-
-    if [ ! -d "$PROJECT_DIR" ]; then
-        git clone https://github.com/wiyba/maryba "$PROJECT_DIR"
-    else
-        echo "Обновляем проект..."
-        cd "$PROJECT_DIR" || exit
-        git pull
-    fi
-
     mkdir -p "$PROJECT_DIR"
+    cd "$PROJECT_DIR" || exit
+
+    git clone https://github.com/wiyba/maryba "$PROJECT_DIR"
+    git pull
+
     python3 -m venv "$PROJECT_DIR/venv"
     source "$PROJECT_DIR/venv/bin/activate"
     cd $PROJECT_DIR || exit
