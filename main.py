@@ -2,6 +2,7 @@ import click
 import logging
 import os
 import ssl
+import sys
 import uvicorn
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
@@ -10,25 +11,71 @@ from settings import (DEBUG, UVICORN_HOST, UVICORN_PORT, UVICORN_SSL_CERTFILE,
                       UVICORN_SSL_KEYFILE, UVICORN_UDS)
 
 
-# Функция для настройки логирования
+
+class LogToLogger:
+    def __init__(self, logger, level, original_stream):
+        self.logger = logger
+        self.level = level
+        self.original_stream = original_stream
+        self.buffer = ''
+
+    def write(self, message):
+        if message:
+            self.buffer += message
+            while '\n' in self.buffer:
+                line, self.buffer = self.buffer.split('\n', 1)
+                # Логируем каждую строку, включая пустые
+                self.logger.log(self.level, line)
+
+    def flush(self):
+        if self.buffer:
+            self.logger.log(self.level, self.buffer)
+            self.buffer = ''
+        self.original_stream.flush()
+
+class CustomFormatter(logging.Formatter):
+    def format(self, record):
+        if record.getMessage() == '':
+            return ''
+        else:
+            return super().format(record)
+
 def setup_logger():
     logger = logging.getLogger("main_logger")
     logger.setLevel(logging.DEBUG if DEBUG else logging.INFO)
 
+    formatter = CustomFormatter(
+        "%(asctime)s - %(levelname)s - %(message)s", datefmt='%d.%m.%Y %H:%M:%S'
+    )
+
     # Консольный обработчик
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.DEBUG if DEBUG else logging.INFO)
-    formatter = logging.Formatter("%(levelname)s:     %(message)s")
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
 
     # Файловый обработчик
-    file_handler = logging.FileHandler("server.log", mode="a", encoding="utf-8")
+    file_handler = logging.FileHandler("server.log", mode="w", encoding="utf-8")
     file_handler.setLevel(logging.DEBUG if DEBUG else logging.INFO)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
+    # Перенаправление print в логгер
+    sys.stdout = LogToLogger(logger, logging.INFO, sys.__stdout__)
+    sys.stderr = LogToLogger(logger, logging.ERROR, sys.__stderr__)
+
+    # Настройка логгера Uvicorn
+    uvicorn_access_logger = logging.getLogger("uvicorn.access")
+    uvicorn_access_logger.handlers = logger.handlers
+    uvicorn_access_logger.setLevel(logger.level)
+
+    uvicorn_error_logger = logging.getLogger("uvicorn.error")
+    uvicorn_error_logger.handlers = logger.handlers
+    uvicorn_error_logger.setLevel(logger.level)
+
     return logger
+
+
 
 
 
@@ -84,7 +131,7 @@ if __name__ == "__main__":
         if UVICORN_UDS:
             bind_args['uds'] = UVICORN_UDS
         else:
-            logger.warning(f"""{click.style('ВАЖНО! Запущено без SSL сертефикатов. Доступ будет ограничен для localhost (127.0.0.1).', blink=True, bold=True, fg="yellow")}""")
+            logger.warning("ВАЖНО! Запущено без SSL сертификатов. Доступ будет ограничен для localhost (127.0.0.1).")
             bind_args['host'] = '127.0.0.1'
             bind_args['port'] = UVICORN_PORT
 
@@ -99,6 +146,7 @@ if __name__ == "__main__":
             **bind_args,
             workers=1,
             reload=DEBUG,
+            log_config=None,
             log_level=logging.DEBUG if DEBUG else logging.INFO
         )
     except FileNotFoundError as e:
