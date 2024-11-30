@@ -12,21 +12,24 @@ from settings import (DEBUG, UVICORN_HOST, UVICORN_PORT, UVICORN_SSL_CERTFILE,
 
 # Функция для настройки логирования
 def setup_logger():
-    logger = logging.getLogger("main_logger")  # Создаём logger с именем
-    logger.setLevel(logging.DEBUG if DEBUG else logging.INFO)  # Уровень логирования
+    logger = logging.getLogger("main_logger")
+    logger.setLevel(logging.DEBUG if DEBUG else logging.INFO)
 
-    # Настройка обработчика и форматера
+    # Консольный обработчик
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.DEBUG if DEBUG else logging.INFO)
-
-    formatter = logging.Formatter(
-        "%(levelname)s:     %(message)s"
-    )
+    formatter = logging.Formatter("%(levelname)s:     %(message)s")
     console_handler.setFormatter(formatter)
-
-    # Добавление обработчика к logger
     logger.addHandler(console_handler)
+
+    # Файловый обработчик
+    file_handler = logging.FileHandler("server.log", mode="a", encoding="utf-8")
+    file_handler.setLevel(logging.DEBUG if DEBUG else logging.INFO)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
     return logger
+
 
 
 # Создание глобального logger

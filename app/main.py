@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -85,3 +85,12 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
         status_code=exc.status_code,
         content={"detail": exc.detail or "An error occurred"},
     )
+
+# Логгирование в онлайн
+@app.get("/logs", response_class=PlainTextResponse)
+async def get_logs():
+    try:
+        with open("server.log", "r", encoding="utf-8") as log_file:
+            return log_file.read()
+    except FileNotFoundError:
+        return "Лог файл не найден."
