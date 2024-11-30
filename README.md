@@ -25,11 +25,5 @@ The `install.sh` script also provides system management commands for handling th
 
 These commands ensure that the `maryba` service runs smoothly and can be easily maintained.
 
-### Domain
-You can use `curl https://get.acme.sh | sh -s email=EMAIL` to install acme and than use built-in SSL configurator by typing Y when promted. Also, to use reverse proxy for Uvicorn's port you need to install `nginx`.
-SSL certs must be located in `/var/lib/maryba/certs/` dircetory as `fullchain.pem` and `key.pem`. Certs can be created with following command:
-```sh
-~/.acme.sh/acme.sh --set-default-ca --server letsencrypt  --issue --standalone --force -d YOUR_DOMAIN \
---key-file /var/lib/maryba/certs/key.pem \
---fullchain-file /var/lib/maryba/certs/fullchain.pem
-```
+### Other Information
+You can use `curl https://get.acme.sh | sh -s email=EMAIL` to install acme.sh if needed. You can view logs using `tail -f /var/lib/maryba/server.log`.

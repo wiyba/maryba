@@ -1,6 +1,7 @@
 #!/bin/bash
 cd / || exit
 LOGFILE="/var/log/maryba.log"
+PROJECT_LOGFILE="/var/log/maryba/server.log"
 exec > >(tee -a "$LOGFILE") 2>&1
 trap 'echo "Ошибка на строке $LINENO: Команда завершилась с кодом $?. Завершаем скрипт." >&2' ERR
 
@@ -14,7 +15,7 @@ STATIC_DIR="$PROJECT_DIR/app/static"
 
 ACTION=$1
 if [[ -z "$ACTION" ]]; then
-    echo "Использование: $0 [install|update|remove]"
+    echo "Использование: $0 [install|uninstall|logs]"
     exit 1
 fi
 
@@ -208,12 +209,20 @@ uninstall_project() {
     echo "Удалено."
 }
 
+logging() {
+    echo "CTRL+C для выхода"
+    tail -f "$PROJECT_LOGFILE"
+}
+
 case $ACTION in
     install)
         install_project
         ;;
     uninstall)
         uninstall_project
+        ;;
+    logs)
+        tail -f "$PROJECT_LOGFILE"
         ;;
     *)
         echo "Неверный параметр: $ACTION"
