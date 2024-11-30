@@ -113,6 +113,7 @@ install_nginx() {
         if [[ "$install_cert_answer" =~ ^[Yy]$ ]]; then
             echo "Устанавливаем сертификаты..."
             systemctl stop nginx
+            mkdir -p "$CERTS_DIR"
             ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt \
                 --issue --standalone --force -d "$DOMAIN" \
                 --key-file "$SSL_KEY" \
