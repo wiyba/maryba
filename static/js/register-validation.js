@@ -3,30 +3,37 @@ async function handleSignUp(event) {
 
     const username = document.querySelector('input[name="username"]').value;
     const password = document.querySelector('input[name="password"]').value;
+    const password_confirm = document.querySelector('input[name="password_confirm"]').value;
     const security_key = document.querySelector('input[name="security_key"]').value;
 
+    // Проверка на длинну введенных данных
     if (username === '' || password === '' || security_key === '') {
         alert('All fields must be filled in');
         event.preventDefault();
         return;
     }
     else if (username.length < 4) {
-        alert('Username must be at least 4 characters long');
+        alert('Никнейм должен быть длиной хотя бы в 4 символа');
         event.preventDefault();
         return;
     }
     else if (password.length < 8) {
-        alert('Password must be at least 8 characters long');
+        alert('Пароль должен быть длиной хотя бы в 8 символов');
+        event.preventDefault();
+        return;
+    }
+    else if (password !== password_confirm) {
+        alert('Пароли не совпадают');
         event.preventDefault();
         return;
     }
     else if (security_key.length !== 32) {
-        alert('Security key must be 32 characters long');
+        alert('Секрет должен быть длиной в 32 символа');
         event.preventDefault();
         return;
     }
 
-
+    // Отправка POST запроса с данными
     try {
         const response = await fetch('/register', {
             method: 'POST',

@@ -1,4 +1,5 @@
 from app.api.auth import login_user, register_user, logout_user
+from app.api.session import get_current_user
 from app.config import config
 from app.main import templates
 import os
@@ -17,18 +18,18 @@ async def login(request: Request, username: str = Form(...), password: str = For
     try:
         session_token = login_user(username, password)
     except ValueError as e:
-        raise HTTPException(status_code=401, detail=str(e))
-
+        print(f"Ошибка регистрации: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
     request.session['user'] = username
     request.session['token'] = session_token
     return RedirectResponse("/", status_code=302)
 
 @router.get("/logout")
 async def logout(request: Request):
+    get_current_user(request)
     user = request.session.get('user')
     if user:
         logout_user(user)
-
     request.session.clear()
     return RedirectResponse("/")
 
@@ -44,5 +45,5 @@ async def register(username: str = Form(...), password: str = Form(...), securit
         register_user(username, password, security_key)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-
     return RedirectResponse("/login", status_code=302)
+

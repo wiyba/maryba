@@ -5,6 +5,7 @@ async function checkSession() {
     const loginLink = document.getElementById('login-link');
     const usernameElement = document.getElementById('username');
 
+    // Отображение информации о пользователе
     if (data.authenticated) {
         loginLink.href = "/logout";
         loginLink.textContent = "Log out";

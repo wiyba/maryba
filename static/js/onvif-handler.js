@@ -1,3 +1,4 @@
+// Проверка наличия картинки с камеры. Если картинка не загрузилась, то выводится сообщение об ошибке
 document.addEventListener('DOMContentLoaded', () => {
     const img = document.querySelector('.video-stream');
     let hasLoaded = false;

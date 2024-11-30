@@ -54,3 +54,14 @@ def logout_user(username: str):
     cursor.execute("DELETE FROM sessions WHERE username = ?", (username,))
     conn.commit()
     conn.close()
+    return True
+
+
+def delete_user(username: str):
+    conn = sqlite3.connect(config.DATABASE)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM users WHERE username = ?", (username,))
+    cursor.execute("DELETE FROM proxmark WHERE username = ?", (username,))
+    conn.commit()
+    conn.close()
+    return True

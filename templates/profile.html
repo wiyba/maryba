@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
-    <link rel="icon" type="image/png" href="/favicon/arrow.png">
+    <link rel="icon" type="image/png" href="/images/favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -53,25 +53,6 @@
             width: 100%;
             padding-top: 20px;
             gap: 20px;
-        }
-
-        .log-button {
-            padding: 8px 15px;
-            font-size: 16px;
-            background-color: #2b2b2b;
-            color: #4CAF50;
-            border-radius: 10px;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.4s, color 0.4s, transform 0.2s;
-        }
-
-        .log-button:hover {
-            background-color: #4CAF50;
-            color: #ffffff;
-            transform: scale(1.1);
         }
 
         .custom-button {
@@ -139,6 +120,27 @@
             color: #7a7a7a;
         }
 
+        .delete-button {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+            background: linear-gradient(145deg, #8B3434, #561A1A);
+            border-radius: 10px;
+            border: 2px solid #D55B5B;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.4s, transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        .delete-button:hover {
+            background-color: #A93232;
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+
         .icon-image {
             width: 30px;
             height: 30px;
@@ -154,15 +156,17 @@
             <div class="input-container" data-placeholder-right="8 chars">
                 <input type="text" name="uid" placeholder="AB CD EF 90" maxlength="11" id="uid-input" required>
             </div>
+            <button type="button" class="delete-button" onclick="handleProfileDelete(event)">DELETE ACCOUNT</button>
             <div class="button-container">
-                <a href="./" class="custom-button"><img src="/favicon/home.png" alt="Home Icon" class="icon-image"></a>
+                <a href="./" class="custom-button"><img src="/images/home.png" alt="Home Icon" class="icon-image"></a>
                 <button type="submit" class="custom-button">
-                    <img src="/favicon/arrow.png" alt="Submit Icon" class="icon-image">
+                    <img src="/images/arrow.png" alt="Submit Icon" class="icon-image">
                 </button>
             </div>
         </form>
     </div>
     <script>
+        // Скрипт для форматирования ввода UID
         const uidInput = document.getElementById('uid-input');
         uidInput.addEventListener('input', () => {
             let value = uidInput.value.replace(/[^A-F0-9]/gi, '').toUpperCase();

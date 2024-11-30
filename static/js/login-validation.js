@@ -4,12 +4,14 @@ async function handleLogin(event) {
     const username = document.querySelector('input[name="username"]').value;
     const password = document.querySelector('input[name="password"]').value;
 
+    // Проверка на длинну введенных данных
     if (username === '' || password === '') {
         alert('All fields must be filled in');
         event.preventDefault();
         return;
     }
 
+    // Отправка POST запроса с данными
     try {
         const response = await fetch('/login', {
             method: 'POST',

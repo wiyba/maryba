@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
-    <link rel="icon" type="image/png" href="/favicon/plus.png">
+    <link rel="icon" type="image/png" href="/images/favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -137,6 +137,14 @@
             transform: translateY(-50%);
             pointer-events: none;
             color: #7a7a7a;
+            padding: 0 5px;
+            z-index: 1;
+            transition: opacity 0.2s;
+            opacity: 1;
+        }
+
+        .input-container.text-overlap::after {
+            opacity: 0;
         }
 
         .icon-image {
@@ -153,26 +161,43 @@
         </div>
         <form onsubmit="handleSignUp(event)">
             <div class="input-container" data-placeholder-right="4-18 chars">
-                <input type="text" name="username" placeholder="Username" maxlength="18" pattern="\w+" title="Only letters, numbers, and underscores are allowed. No spaces." required>
+                <input type="text" name="username" placeholder="Username" maxlength="18" pattern="\w+" title="Username" required>
             </div>
             <div class="input-container" data-placeholder-right="8-32 chars">
-                <input type="password" name="password" placeholder="Password" maxlength="32" pattern="\S+" title="No spaces are allowed." required>
+                <input type="password" name="password" placeholder="Password" maxlength="32" pattern="\S+" title="Password" required>
+            </div>
+            <div class="input-container">
+                <input type="password" name="password_confirm" placeholder="Confirm password" maxlength="32" pattern="\S+" title="Confirm password" required>
             </div>
             <div class="input-container" data-placeholder-right="32 chars">
-                <input type="password" name="security_key" placeholder="Secret (console)" maxlength="32" required>
+                <input type="password" name="security_key" placeholder="Secret (get it from console)" maxlength="32" title="Security key" required>
             </div>
             <div class="button-container">
-                <a href="/" class="custom-button"><img src="/favicon/home.png" alt="Icon" class="icon-image"></a>
+                <a href="/" class="custom-button"><img src="/images/home.png" alt="Icon" class="icon-image"></a>
                 <button type="submit" class="custom-button">
-                    <img src="/favicon/plus.png" alt="Register Icon" class="icon-image">
+                    <img src="/images/plus.png" alt="Register Icon" class="icon-image">
                 </button>
             </div>
         </form>
     </div>
     <script>
+        // Фильтр символов для полей username и password
         document.querySelectorAll('input[name="username"], input[name="password"]').forEach(input => {
             input.addEventListener('input', () => {
                 input.value = input.value.replace(/[^A-Za-zА-Яа-я0-9_]/g, '');
+            });
+        });
+
+        // Делает плейсхолдер невидимым при вводе 5+ символов
+        document.querySelectorAll('.input-container input').forEach(input => {
+            input.addEventListener('input', () => {
+                const container = input.parentElement;
+
+                if (input.value.length >= 8) {
+                    container.classList.add('text-overlap');
+                } else {
+                    container.classList.remove('text-overlap');
+                }
             });
         });
     </script>

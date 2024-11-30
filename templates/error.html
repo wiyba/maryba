@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Error {{ number }}</title>
-    <link rel="icon" type="image/png" href="/favicon/onvif.png">
+    <link rel="icon" type="image/png" href="/images/favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -80,17 +80,42 @@
             width: 20px;
             height: 20px;
         }
+
+        .login-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #4CAF50;
+            border-radius: 10px;
+            border: none;
+            text-decoration: none;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .login-button:hover {
+            background-color: #3e8e41;
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="error-message">
-            <h3>Error {{ number }}</h3>
-            <h2>{{ type }}</h2>
-        </div>
-        <a href="./" class="home-button">
-            <img src="/favicon/home.png" alt="Home Icon">
-        </a>
+<div class="container">
+    <div class="error-message">
+        <h3>Error {{ number }}</h3>
+        <h2>{{ type }}</h2>
     </div>
+    <a href="./" class="home-button">
+        <img src="/images/home.png" alt="Home Icon">
+    </a>
+
+    <!-- Отображение кнопки входа при ошибке 401 -->
+    {% if number == 401 %}
+    <a href="/login" class="login-button">Sign in</a>
+    {% endif %}
+</div>
 </body>
 </html>

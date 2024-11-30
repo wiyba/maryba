@@ -11,7 +11,7 @@ class Config:
     STATIC_DIR = os.path.join(BASE_DIR, "static")  # Папка со статикой
 
     # Поддиректории внутри static/
-    IMAGES_DIR = os.path.join(STATIC_DIR, "favicon")  # Папка с изображениями
+    IMAGES_DIR = os.path.join(STATIC_DIR, "images")  # Папка с изображениями
     VIDEOS_DIR = os.path.join(STATIC_DIR, "videos")  # Папка с видео
     TS_DIR = os.path.join(STATIC_DIR, "ts") # Папка с TS
     JS_DIR = os.path.join(STATIC_DIR, "js")  # Папка с JS

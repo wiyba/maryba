@@ -10,7 +10,6 @@ def get_current_user(request: Request):
     token = request.session.get('token')
     if not user or not token:
         raise HTTPException(status_code=401)
-
     conn = sqlite3.connect(config.DATABASE)
     cursor = conn.cursor()
     cursor.execute("SELECT session_token FROM sessions WHERE username = ?", (user,))
@@ -19,7 +18,6 @@ def get_current_user(request: Request):
 
     if result is None or result[0] != token:
         raise HTTPException(status_code=401, detail="Сессия недействительна")
-
     return user
 
 
