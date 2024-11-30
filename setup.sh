@@ -106,10 +106,13 @@ install_nginx() {
         echo "    --fullchain-file $SSL_PATH"
         echo
 
-        read -r -p "Хотите ли вы установить сертификаты сейчас? [y/N]: " install_cert_answer
+        while [[ ! "$install_cert_answer" =~ ^[YyNn]$ ]]; do
+            read -r -p "Хотите ли вы установить сертификаты сейчас? [y/N]: " install_cert_answer
+        done
 
         if [[ "$install_cert_answer" =~ ^[Yy]$ ]]; then
             echo "Устанавливаем сертификаты..."
+            systemctl stop nginx
             ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt \
                 --issue --standalone --force -d "$DOMAIN" \
                 --key-file "$SSL_KEY" \
@@ -117,6 +120,7 @@ install_nginx() {
                     echo "Ошибка при установке сертификатов. Проверьте установку acme.sh и повторите попытку."
                     exit 1
                 }
+            systemctl start nginx
             echo "Сертификаты успешно установлены."
         else
             echo "Сертификаты не установлены. Завершаем выполнение."
@@ -179,7 +183,9 @@ install_project() {
     systemctl start "$SERVICE_NAME"
 
     echo "Хотите настроить Nginx? [y/N]: "
-    read -r install_nginx_answer
+    while [[ ! "$install_nginx_answer" =~ ^[YyNn]$ ]]; do
+        read -r install_nginx_answer
+    done
     if [[ "$install_nginx_answer" =~ ^[Yy]$ ]]; then
         install_nginx
     fi
