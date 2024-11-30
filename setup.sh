@@ -1,7 +1,7 @@
 #!/bin/bash
 cd / || exit
 LOGFILE="/var/log/maryba.log"
-PROJECT_LOGFILE="/var/log/maryba/server.log"
+PROJECT_LOGFILE="/var/lib/maryba/server.log"
 exec > >(tee -a "$LOGFILE") 2>&1
 trap 'echo "Ошибка на строке $LINENO: Команда завершилась с кодом $?. Завершаем скрипт." >&2' ERR
 
@@ -193,6 +193,10 @@ install_project() {
     if [[ "$install_nginx_answer" =~ ^[Yy]$ ]]; then
         install_nginx
     fi
+
+    echo "Проект установлен."
+    echo
+    logging
 }
 
 uninstall_project() {
