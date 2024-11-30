@@ -50,10 +50,9 @@ create_service() {
     echo "Создаём systemd-сервис для Uvicorn..."
     rm -rf "$PROJECT_DIR/venv"
     mkdir -p "$PROJECT_DIR"
-    cd "$PROJECT_DIR" || exit
 
     git clone https://github.com/wiyba/maryba "$PROJECT_DIR"
-    git pull
+
 
     python3 -m venv "$PROJECT_DIR/venv"
     source "$PROJECT_DIR/venv/bin/activate"
@@ -196,7 +195,7 @@ uninstall_project() {
     fi
     
     if [[ -d "$PROJECT_DIR" ]]; then
-        find "$PROJECT_DIR" -mindepth 1 -maxdepth 1 ! -name "certs" ! -name ".git" -exec rm -rf {} +
+        find "$PROJECT_DIR" -mindepth 1 -maxdepth 1 ! -name "certs" -exec rm -rf {} +
     else
         echo "Директория $PROJECT_DIR не существует."
     fi
