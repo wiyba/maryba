@@ -26,4 +26,4 @@ The `install.sh` script also provides system management commands for handling th
 These commands ensure that the `maryba` service runs smoothly and can be easily maintained.
 
 ### Other Information
-You can use `curl https://get.acme.sh | sh -s email=EMAIL` to install acme.sh if needed. You can view logs using `tail -f /var/lib/maryba/server.log`.
+You can use `curl https://get.acme.sh | sh -s email=EMAIL` to install acme.sh if needed. You can view logs using `tail -f /var/lib/maryba/server.log` or `bash /var/lib/maryba/setup.sh logs`.
