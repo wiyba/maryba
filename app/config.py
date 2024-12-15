@@ -40,7 +40,7 @@ class Camera:
     ip = '192.168.207.71'
     user = 'admin'
     passwd = 'rubetek11'
-    rtsp_url = f"rtsp://{user}:{passwd}@{ip}:8554/Streaming/Channels/101"
+    rtsp_url = f"rtsp://127.0.0.1:8554/harehare"
 
     # Static
     ffmpeg_process = None

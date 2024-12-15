@@ -56,28 +56,28 @@
 
         .error-message {
             display: flex;
-            flex-direction: column; /* Расположить элементы (заголовки) вертикально друг под другом */
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             color: #f0f0f0;
-            font-size: 18px; /* Можно сделать основной текст чуть меньше, если нужно */
+            font-size: 18px;
             text-align: center;
             padding: 20px;
             height: 100%;
         }
 
         .error-message h3 {
-            font-size: 36px; /* Увеличиваем размер для кода ошибки (404) */
-            font-weight: bold; /* Делаем более жирным, чтобы выделить */
-            margin: 0; /* Убираем отступы сверху и снизу */
-            color: #ff4d4d; /* Красный цвет для привлечения внимания к ошибке */
+            font-size: 36px;
+            font-weight: bold;
+            margin: 0;
+            color: #ff4d4d;
         }
 
         .error-message h2 {
-            font-size: 24px; /* Сделаем "Not Found" немного меньше */
-            font-weight: 600; /* Полужирный текст для меньшего акцента */
-            margin: 10px 0 0; /* Отступ сверху между h3 и h2 */
-            color: #ffffff; /* Белый цвет для хорошего контраста с фоном */
+            font-size: 24px;
+            font-weight: 600;
+            margin: 10px 0 0;
+            color: #ffffff;
         }
 
         .home-button {
@@ -110,14 +110,13 @@
 </head>
 <body>
     <div class="video-container">
-        <img class="video-stream" src="/onvif_video" alt="ONVIF Stream" onerror="showError()">
+        <img class="video-stream" src="/onvif_video" alt="ONVIF Stream">
         <a href="./" class="home-button">
             <img src="https://img.icons8.com/?size=100&id=1iF9PyJ2Thzo&format=png&color=FFFFFF" alt="Home Icon">
         </a>
         <div id="error-message" class="error-message" style="display: none;">
             <h3>No Signal</h3>
             <h2>ONVIF device was not found</h2>
-            <img src="/images/image.jpg" alt="No Signal">
         </div>
         <div class="audio-player">
             <audio controls autoplay>
@@ -125,10 +124,7 @@
                 Your browser does not support the audio element.
             </audio>
         </div>
-        <div class="button_container">
-
-        </div>
+        <div class="button_container"></div>
     </div>
-    <script src="/js/onvif-handler.js"></script>
 </body>
 </html>
