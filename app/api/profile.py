@@ -2,7 +2,7 @@ from app.config import config
 from fastapi import Request
 import sqlite3
 
-
+# Скрипт для изменения UID, привязанного к пользователю в датабазе
 def submit_uid(request: Request, uid: str):
     username = request.session.get('user')
     if not username:

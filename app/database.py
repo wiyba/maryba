@@ -1,7 +1,7 @@
 from app.config import config
 import sqlite3
 
-
+# Функция для создания (инициации) датабазы
 def init_db():
     conn = sqlite3.connect(config.DATABASE)
     cursor = conn.cursor()

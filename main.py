@@ -11,7 +11,7 @@ from settings import (DEBUG, UVICORN_HOST, UVICORN_PORT, UVICORN_SSL_CERTFILE,
                       UVICORN_SSL_KEYFILE, UVICORN_UDS)
 
 
-
+# Функция логгера заимствована из https://github.com/Gozargah/Marzban
 class LogToLogger:
     def __init__(self, logger, level, original_stream):
         self.logger = logger
@@ -24,7 +24,6 @@ class LogToLogger:
             self.buffer += message
             while '\n' in self.buffer:
                 line, self.buffer = self.buffer.split('\n', 1)
-                # Логируем каждую строку, включая пустые
                 self.logger.log(self.level, line)
 
     def flush(self):
@@ -40,12 +39,14 @@ class CustomFormatter(logging.Formatter):
         else:
             return super().format(record)
 
+# Функция для настройки логгера
 def setup_logger():
     logger = logging.getLogger("main_logger")
     logger.setLevel(logging.DEBUG if DEBUG else logging.INFO)
 
+    # Формат вывода
     formatter = CustomFormatter(
-        "%(asctime)s - %(levelname)s - %(message)s", datefmt='%d.%m.%Y %H:%M:%S'
+        "%(asctime)s == %(levelname)s: %(message)s", datefmt='%d.%m.%Y %H:%M:%S'
     )
 
     # Консольный обработчик
@@ -76,27 +77,23 @@ def setup_logger():
     return logger
 
 
-
-
-
 # Создание глобального logger
-logger = setup_logger()
-
+logs = setup_logger()
 
 def validate_cert_and_key(cert_file_path, key_file_path):
     if not os.path.isfile(cert_file_path):
-        logger.error(f"SSL certificate file '{cert_file_path}' does not exist.")
+        logs.error(f"SSL certificate file '{cert_file_path}' does not exist.")
         raise ValueError(f"SSL certificate file '{cert_file_path}' does not exist.")
 
     if not os.path.isfile(key_file_path):
-        logger.error(f"SSL key file '{key_file_path}' does not exist.")
+        logs.error(f"SSL key file '{key_file_path}' does not exist.")
         raise ValueError(f"SSL key file '{key_file_path}' does not exist.")
 
     try:
         context = ssl.create_default_context()
         context.load_cert_chain(certfile=cert_file_path, keyfile=key_file_path)
     except ssl.SSLError as e:
-        logger.error(f"Ошибка SSL: {e}")
+        logs.error(f"Ошибка SSL: {e}")
         raise ValueError(f"Ошибка SSL: {e}")
 
     try:
@@ -105,18 +102,19 @@ def validate_cert_and_key(cert_file_path, key_file_path):
             cert = x509.load_pem_x509_certificate(cert_data, default_backend())
 
         if cert.issuer == cert.subject:
-            logger.warning("Предоставленный вами сертефикат не является доверенным.")
+            logs.warning("Предоставленный вами сертефикат не является доверенным.")
             raise ValueError("Предоставленный вами сертефикат не является доверенным.")
     except Exception as e:
-        logger.error(f"Проверка сертефиката не удалась: {e}")
+        logs.error(f"Проверка сертефиката не удалась: {e}")
         raise ValueError(f"Проверка сертефиката не удалась: {e}")
 
 
+# Основной процесс Uvicorn
 if __name__ == "__main__":
     bind_args = {}
 
     if UVICORN_SSL_CERTFILE and UVICORN_SSL_KEYFILE:
-        logger.info("Проверяем SSL сертефикаты...")
+        logs.info("Проверяем SSL сертефикаты...")
         validate_cert_and_key(UVICORN_SSL_CERTFILE, UVICORN_SSL_KEYFILE)
 
         bind_args['ssl_certfile'] = UVICORN_SSL_CERTFILE
@@ -131,7 +129,7 @@ if __name__ == "__main__":
         if UVICORN_UDS:
             bind_args['uds'] = UVICORN_UDS
         else:
-            logger.warning("ВАЖНО! Запущено без SSL сертификатов. Доступ будет ограничен для localhost (127.0.0.1).")
+            logs.warning("Запущено без SSL сертификатов. Доступ будет ограничен для localhost (127.0.0.1).")
             bind_args['host'] = '127.0.0.1'
             bind_args['port'] = UVICORN_PORT
 
@@ -140,7 +138,8 @@ if __name__ == "__main__":
         bind_args['host'] = '0.0.0.0'
 
     try:
-        logger.info("Запускаем сервер Uvicorn...")
+        logs.info("Запускаем сервер Uvicorn...")
+        logs.info("")
         uvicorn.run(
             "app.main:app",
             **bind_args,
@@ -150,4 +149,4 @@ if __name__ == "__main__":
             log_level=logging.DEBUG if DEBUG else logging.INFO
         )
     except FileNotFoundError as e:
-        logger.error(f"При запуске произошла ошибка: {e}")
+        logs.error(f"При запуске произошла ошибка: {e}")

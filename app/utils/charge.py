@@ -1,16 +1,17 @@
 import re
 from app.api.proxmark import execute_read
 from app.config import config
+from app.utils.gui import change_color
 import sqlite3
-import os
 import time
 
 
-# Получение никнейма
+# Получение никнейма из датабазы используя полученный из вывода UID
 def get_user_by_uid(uid):
     conn = sqlite3.connect(config.DATABASE)
     cursor = conn.cursor()
 
+    # Выводит значение столбца username в таблице proxmark из той строчки где uid равен полученному при выводе
     cursor.execute("SELECT username FROM proxmark WHERE uid = ?", (uid,))
     result = cursor.fetchone()
     conn.close()
@@ -19,97 +20,74 @@ def get_user_by_uid(uid):
         return result[0]
     return None
 
-# Получение UID и баланса
+# Обновление счетчика проходов
 def update_counter(uid, balance):
     conn = sqlite3.connect(config.DATABASE)
     cursor = conn.cursor()
 
-    cursor.execute("SELECT counter FROM proxmark WHERE uid = ?", (uid,))
-    result = cursor.fetchone()
-
-    if result:
-        cursor.execute("UPDATE proxmark SET counter = ? WHERE uid = ?", (balance, uid))
-    else:
-        cursor.execute("INSERT INTO proxmark (uid, counter) VALUES (?, ?)", (uid, balance))
+    # Обновляет значение таблицы proxmark в столбце counter в строчке где uid равен полученному при выводе
+    cursor.execute("UPDATE proxmark SET counter = ? WHERE uid = ?", (balance, uid))
 
     conn.commit()
     conn.close()
 
-# Извлечение UID
+# Извлечение UID из вывода для функции ниже
 def extract_uid(output):
     match = re.search(r"UID:\s*([A-F0-9 ]+)", output)
     if match:
         return match.group(1).strip()
     return None
 
-# Извлечение баланса
+# Извлечение баланса из вывода для функции ниже
 def extract_balance(output):
     match = re.search(r"New balance:\s*([0-9A-F]+)", output)
     if match:
         return int(match.group(1), 16)
     return None
 
-
+# Функция для исполнения команд в cli proxmark3 используя апи из ./api/proxmark.py
 def start_reader():
     while True:
-        if not os.path.exists("./app/api/new-magic4pm3/client/proxmark3"):
-            print("Билд proxmark3 отсутствует: функция считывателя не была загружена.")
-            print()
-            break
-
-        # print("Ожидание метки...") (для отладки)
+        # Данный цикл бесконечно выполняет hf 14a read пока команда не даст вывод в output
         output, error = execute_read("hf 14a read")
 
+        # Если error становится чем либо то это сигнализирует об ошибке и делает отладочный вывод
         if error:
-            if error == "Карта не обнаружена":
-                print("Метка отсутствует, продолжаю сканировать...")
-                time.sleep(1)
-                continue
             print("Ошибка при выполнении команды hf 14a read:", error)
             break
 
+        # Если output становится чем либо, то производится извлечение UID и имени пользователя к которому он привязан.
+        # После извлечения баланс карты пополняется на один (баланс это количество проходов).
         if output:
             uid = extract_uid(output)
-            if uid:
-                print(f"Метка найдена: {uid}")
-            else:
-                print("Не удалось найти UID в выводе.")
-                continue
-
-            # Проверяем UID в базе данных
+            print(f"Метка найдена: {uid}")
             username = get_user_by_uid(uid)
+
+            # Если в датабазе будет найден юзернейм то выведется отладочное сообщение с никнеймом и UID
+            # Если в датабазе не будет найдена строка с получемнным UID то цикл чтения продолжится
             if username:
                 print(f"Метка найдена: {uid}, Пользователь: {username}")
             else:
                 print(f"Метка {uid} невалидная.")
                 continue
 
-            print("Пробую списать проход...")
+            # После проверки юзернейма произведется пополнение баланса на 1
             charge_output, charge_error = execute_read("hf mfp recharge --bal 1")
             if charge_error:
                 print("Ошибка при выполнении команды hf mfp recharge:", charge_error)
                 break
 
+            # Если команда была успешно выполнена то
             if charge_output and "ok" in charge_output.lower():
-                print("Успешно списано:", charge_output)
-
+                # Из вывода выполненных команд извлекается баланс
                 balance = extract_balance(charge_output)
-                if balance is not None:
-                    print(f"Новый баланс: {balance}")
-                    print("Обновление счетчика для UID:", uid)
-                    update_counter(uid, balance)
-                else:
-                    print("Не удалось извлечь баланс из вывода.")
+                print(f"Количество проходов: {balance}")
+                update_counter(uid, balance)
+                # Меняется цвет эмулятора двери, сигнализируя о том что дверь открыта
+                change_color()
+                print("Дверь открыта!")
+                time.sleep(2.3)
 
-
-
-
-                    print("Дверь открыта!")
-                    time.sleep(3)
+            # Если charge_output будет какая либо другая ошибка то будет данный отладочный вывод
             else:
-                print("Не удалось списать проход:", charge_output or "Нет данных")
-        time.sleep(0.5)
-
-
-if __name__ == "__main__":
-    start_reader()
+                print("Не удалось добавить проход:", charge_output or "Нет данных")

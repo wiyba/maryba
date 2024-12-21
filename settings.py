@@ -2,7 +2,7 @@ from decouple import config
 from dotenv import load_dotenv
 import os
 
-# Load the .env file from a specific path
+# TODO: Add cp func to setup.sh so .env file will be available at /var/lib/maryba
 ENV_FILE_PATH = os.getenv('ENV_FILE_PATH', '/var/lib/maryba/.env')
 load_dotenv(ENV_FILE_PATH)
 

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile</title>
-    <link rel="icon" type="image/png" href="/images/favicon.png">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Профиль</title>
+    <link href="/images/favicon.png" rel="icon" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -148,38 +148,39 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="title-container">
-            <div class="title">Profile</div>
-        </div>
-        <form onsubmit="handleProfileSubmit(event)">
-            <div class="input-container" data-placeholder-right="8 chars">
-                <input type="text" name="uid" placeholder="AB CD EF 90" maxlength="11" id="uid-input" required>
-            </div>
-            <button type="button" class="delete-button" onclick="handleProfileDelete(event)">DELETE ACCOUNT</button>
-            <div class="button-container">
-                <a href="./" class="custom-button"><img src="/images/home.png" alt="Home Icon" class="icon-image"></a>
-                <button type="submit" class="custom-button">
-                    <img src="/images/arrow.png" alt="Submit Icon" class="icon-image">
-                </button>
-            </div>
-        </form>
+<div class="container">
+    <div class="title-container">
+        <div class="title">Профиль</div>
     </div>
-    <script>
-        // Скрипт для форматирования ввода UID
-        const uidInput = document.getElementById('uid-input');
-        uidInput.addEventListener('input', () => {
-            let value = uidInput.value.replace(/[^A-F0-9]/gi, '').toUpperCase();
-            let formattedValue = '';
-            for (let i = 0; i < value.length; i++) {
-                if (i > 0 && i % 2 === 0) {
-                    formattedValue += ' ';
-                }
-                formattedValue += value[i];
+    <!-- Форма для изменения UID или удаления аккаунта -->
+    <form onsubmit="handleProfileSubmit(event)">
+        <div class="input-container" data-placeholder-right="8 символов">
+            <input id="uid-input" maxlength="11" name="uid" placeholder="UID ключа" required type="text">
+        </div>
+        <button class="delete-button" onclick="handleProfileDelete(event)" type="button">УДАЛИТЬ АККАУНТ</button>
+        <div class="button-container">
+            <a class="custom-button" href="./"><img alt="Домой" class="icon-image" src="/images/home.png"></a>
+            <button class="custom-button" type="submit">
+                <img alt="Подтвердить" class="icon-image" src="/images/arrow.png">
+            </button>
+        </div>
+    </form>
+</div>
+<script>
+    // Скрипт для форматирования ввода UID
+    const uidInput = document.getElementById('uid-input');
+    uidInput.addEventListener('input', () => {
+        let value = uidInput.value.replace(/[^A-F0-9]/gi, '').toUpperCase();
+        let formattedValue = '';
+        for (let i = 0; i < value.length; i++) {
+            if (i > 0 && i % 2 === 0) {
+                formattedValue += ' ';
             }
-            uidInput.value = formattedValue;
-        });
-    </script>
-    <script src="/js/profile-submit.js"></script>
+            formattedValue += value[i];
+        }
+        uidInput.value = formattedValue;
+    });
+</script>
+<script src="/js/profile-submit.js"></script>
 </body>
 </html>

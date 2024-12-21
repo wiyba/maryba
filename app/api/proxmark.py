@@ -1,27 +1,22 @@
 import os
 import subprocess
-import pexpect
+from app.config import proxmark
 
 # Ребилд софта для проксмарка
 def proxmark_build():
     os.system('cd ./app/api/new-magic4pm3 && git submodule init && git submodule update && git pull origin vos5 && make -j client')
 
 
-
+# Скрипт для взаимодействия с proxmark3 и считывания ключкарты например
 def execute_read(command):
-    client_path = "./app/api/new-magic4pm3/client/proxmark3"
-    device_port = "/dev/tty.usbmodemiceman1"
-
-    if not os.path.exists(client_path):
-        return None, f"Файл {client_path} не найден"
-
     try:
         process = subprocess.Popen(
-            [client_path, "-p", device_port, "-c", command],
+            [proxmark.client_path, "-p", proxmark.device_port, "-c", command],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True
         )
+
 
         output, error = process.communicate(timeout=10)
 

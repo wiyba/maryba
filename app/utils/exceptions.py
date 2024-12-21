@@ -1,12 +1,11 @@
-from app.config import config
-from fastapi import FastAPI, Request
+from fastapi import Request
 from fastapi.responses import HTMLResponse
 from jinja2 import Environment, FileSystemLoader
+from app.config import config
 
-
-app = FastAPI()
 env = Environment(loader=FileSystemLoader(config.TEMPLATES_DIR))
 
+# Функция для отображения шаблона ошибки с заданными данными об ошибке
 def render_error_page(request: Request, status_code: int, error_type: str) -> HTMLResponse:
     template = env.get_template("error.html")
     content = template.render(

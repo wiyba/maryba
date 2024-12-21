@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ONVIF Stream</title>
-    <link rel="icon" type="image/png" href="/images/favicon.png">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Камера</title>
+    <link href="/images/favicon.png" rel="icon" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -35,23 +35,6 @@
             height: 100%;
             object-fit: cover;
             border-radius: 20px;
-        }
-
-        .audio-player {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 8px;
-            padding: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .audio-player audio {
-            width: 150px;
         }
 
         .error-message {
@@ -106,25 +89,52 @@
             width: 24px;
             height: 24px;
         }
+
+        .button-container {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+        }
+
+        .button-container .home-button {
+            position: static;
+            top: auto;
+            right: auto;
+        }
     </style>
 </head>
 <body>
-    <div class="video-container">
-        <img class="video-stream" src="/onvif_video" alt="ONVIF Stream">
-        <a href="./" class="home-button">
-            <img src="https://img.icons8.com/?size=100&id=1iF9PyJ2Thzo&format=png&color=FFFFFF" alt="Home Icon">
-        </a>
-        <div id="error-message" class="error-message" style="display: none;">
-            <h3>No Signal</h3>
-            <h2>ONVIF device was not found</h2>
-        </div>
-        <div class="audio-player">
-            <audio controls autoplay>
-                <source src="/onvif_audio" type="audio/mpeg">
-                Your browser does not support the audio element.
-            </audio>
-        </div>
-        <div class="button_container"></div>
+<!-- Страница для отображения обработанной картинки с кам -->
+<div class="video-container">
+    <img alt="Загрузка картинки с камеры...." class="video-stream" src="/onvif_video">
+    <a class="home-button" href="./">
+        <img alt="Домой" src="/images/home.png">
+    </a>
+    <div class="error-message" id="error-message" style="display: none;">
+        <h3>No Signal</h3>
+        <h2>ONVIF device was not found</h2>
     </div>
+    <div class="button-container">
+        <a class="home-button" href="#" onclick="openDoor()">
+            <img alt="Открыть дверь" src="/images/key.png">
+        </a>
+        <a class="home-button" href="#" onclick="">
+            <img alt="Включить звук" src="/images/mic.png">
+        </a>
+    </div>
+</div>
+<script>
+    async function openDoor() {
+        const response = await fetch("/onvif", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+    }
+</script>
 </body>
 </html>

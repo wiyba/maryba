@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log In</title>
-    <link rel="icon" type="image/png" href="/images/favicon.png">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Вход</title>
+    <link href="/images/favicon.png" rel="icon" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -140,24 +140,25 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="title-container">
-            <div class="title">Sign in</div>
-            <a href="/register" class="reg-button">Sign Up</a>
-        </div>
-        <form onsubmit="handleLogin(event)">
-            <label for="username" class="visually-hidden">Username</label>
-            <input type="text"  id="username" name="username" placeholder="Username" required>
-            <label for="password" class="visually-hidden">Password</label>
-            <input type="password" id="password" name="password" placeholder="Password" required>
-            <div class="button-container">
-                <a href="./" class="custom-button"><img src="/images/home.png" alt="Icon" class="icon-image"></a>
-                <button type="submit" class="custom-button">
-                    <img src="/images/arrow.png" alt="Submit Icon" class="icon-image">
-                </button>
-            </div>
-        </form>
+<div class="container">
+    <div class="title-container">
+        <div class="title">Вход</div>
+        <a class="reg-button" href="/register">Регистрация</a>
     </div>
-    <script src="/js/login-validation.js"></script>
+    <!-- Форма для входа в аккаунт -->
+    <form onsubmit="handleLogin(event)">
+        <label class="visually-hidden" for="username">Никнейм</label>
+        <input id="username"  name="username" placeholder="Никнейм" required type="text">
+        <label class="visually-hidden" for="password">Пароль</label>
+        <input id="password" name="password" placeholder="Пароль" required type="password">
+        <div class="button-container">
+            <a class="custom-button" href="./"><img alt="Домой" class="icon-image" src="/images/home.png"></a>
+            <button class="custom-button" type="submit">
+                <img alt="Войти" class="icon-image" src="/images/arrow.png">
+            </button>
+        </div>
+    </form>
+</div>
+<script src="/js/login-validation.js"></script>
 </body>
 </html>

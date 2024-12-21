@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Error {{ number }}</title>
-    <link rel="icon" type="image/png" href="/images/favicon.png">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Ошибка {{ number }}</title>
+    <link href="/images/favicon.png" rel="icon" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -105,16 +105,16 @@
 <body>
 <div class="container">
     <div class="error-message">
-        <h3>Error {{ number }}</h3>
+        <h3>Ошибка {{ number }}</h3>
         <h2>{{ type }}</h2>
     </div>
-    <a href="./" class="home-button">
-        <img src="/images/home.png" alt="Home Icon">
+    <a class="home-button" href="./">
+        <img alt="Home Icon" src="/images/home.png">
     </a>
 
     <!-- Отображение кнопки входа при ошибке 401 -->
     {% if number == 401 %}
-    <a href="/login" class="login-button">Sign in</a>
+    <a class="login-button" href="/login">Войти</a>
     {% endif %}
 </div>
 </body>
