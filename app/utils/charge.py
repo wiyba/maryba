@@ -1,9 +1,10 @@
-import re
-from app.api.proxmark import execute_read
-from app.config import config
-from app.utils.gui import change_color
+from app.api.proxmark import *
+from app.utils.gui import *
+from app import config
+
 import sqlite3
 import time
+import re
 
 
 # Получение никнейма из датабазы используя полученный из вывода UID

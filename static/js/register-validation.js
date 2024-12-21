@@ -1,6 +1,7 @@
 async function handleSignUp(event) {
     event.preventDefault();
 
+    // Создание переменных с данными из формы
     const username = document.querySelector('input[name="username"]').value;
     const password = document.querySelector('input[name="password"]').value;
     const password_confirm = document.querySelector('input[name="password_confirm"]').value;
@@ -8,7 +9,7 @@ async function handleSignUp(event) {
 
     // Проверка на длинну введенных данных
     if (username === '' || password === '' || security_key === '') {
-        alert('All fields must be filled in');
+        alert('Все поля должны быть заполнены!');
         event.preventDefault();
         return;
     }

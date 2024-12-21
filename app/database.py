@@ -1,4 +1,5 @@
-from app.config import config
+from app import config
+
 import sqlite3
 
 # Функция для создания (инициации) датабазы
@@ -18,7 +19,7 @@ def init_db():
     # Таблица сессий
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS sessions (
-        username TEXT PRIMARY KEY,
+        username TEXT UNIQUE PRIMARY KEY,
         session_token TEXT NOT NULL
     )
     """)
@@ -27,8 +28,8 @@ def init_db():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS proxmark (
         id INTEGER PRIMARY KEY,
-        username TEXT NOT NULL,
-        uid TEXT NOT NULL,
+        username TEXT UNIQUE NOT NULL,
+        uid TEXT UNIQUE NOT NULL,
         counter INTEGER DEFAULT 0,
         FOREIGN KEY (username) REFERENCES users (username)
     )

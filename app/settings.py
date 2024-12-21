@@ -1,6 +1,4 @@
 import os
-import json
-import bcrypt
 
 class Config:
     # Основная директория проекта

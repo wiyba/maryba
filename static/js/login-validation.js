@@ -1,12 +1,13 @@
 async function handleLogin(event) {
     event.preventDefault();
 
+    // Создание переменных с данными из формы
     const username = document.querySelector('input[name="username"]').value;
     const password = document.querySelector('input[name="password"]').value;
 
     // Проверка на длинну введенных данных
     if (username === '' || password === '') {
-        alert('All fields must be filled in');
+        alert('Все поля должны быть заполнены!');
         event.preventDefault();
         return;
     }

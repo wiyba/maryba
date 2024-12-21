@@ -2,16 +2,17 @@
 async function handleProfileSubmit(event) {
     event.preventDefault();
 
+    // Создание переменных с данными из формы
     const uid = document.querySelector('input[name="uid"]').value;
 
     // Проверка на длинну введенных данных
     if (uid === '') {
-        alert('All fields must be filled in');
+        alert('Все поля должны быть заполнены!');
         event.preventDefault();
         return;
     }
     else if (uid.length !== 11) {
-        alert('UID должен быть длиной в 8 символов');
+        alert('UID должен быть длиной в 8 символов!');
         event.preventDefault();
         return;
     }
@@ -28,11 +29,13 @@ async function handleProfileSubmit(event) {
 
         if (response.ok) {
             window.location.href = "/";
-        } else {
+        }
+        else {
             const errorData = await response.json();
             alert(errorData.detail);
         }
-    } catch (error) {
+    }
+    catch (error) {
         console.error("Ошибка при изменении профиля:", error);
     }
 }
@@ -41,25 +44,25 @@ async function handleProfileSubmit(event) {
 async function handleProfileDelete(event) {
     event.preventDefault();
 
-    const confirmation = confirm("Are you sure you want to delete your account? This action cannot be undone.");
+    const confirmation = confirm("Вы уверены что хотите удалить свой аккаунт? Это действие не может быть отменено.");
 
-    try {
-        const response = await fetch('/profile', {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ confirmation: true })
-        });
-
-        if (response.ok) {
-            window.location.href = "/logout";
-        } else {
-            const errorData = await response.json();
-            alert(errorData.detail || "An error occurred while deleting the profile.");
+    // Если confirmation == true то отправляется DELETE запрос
+    if (confirmation) {
+        try {
+            const response = await fetch('/profile', {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                window.location.href = "/logout";
+            }
+            else {
+                const errorData = await response.json();
+                alert(errorData.detail || "Во время удаления аккаунта произошла ошибка, подробнее в консоли.");
+            }
         }
-    } catch (error) {
-        console.error("Ошибка при удалении профиля:", error);
+        catch (error) {
+            console.error("Ошибка при удалении аккаунта:", error);
+        }
     }
 }
 

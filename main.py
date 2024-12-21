@@ -1,17 +1,18 @@
-import click
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+
 import logging
 import os
 import ssl
 import sys
 import uvicorn
-from cryptography import x509
-from cryptography.hazmat.backends import default_backend
 
+# Импорт настроек из файла settings.py, при наличии .env файла по пути /var/lib/maryba/ берет переменные из него
 from settings import (DEBUG, UVICORN_HOST, UVICORN_PORT, UVICORN_SSL_CERTFILE,
                       UVICORN_SSL_KEYFILE, UVICORN_UDS)
 
 
-# Функция логгера заимствована из https://github.com/Gozargah/Marzban
+### Функция логгера заимствована из https://github.com/Gozargah/Marzban ###
 class LogToLogger:
     def __init__(self, logger, level, original_stream):
         self.logger = logger
@@ -76,18 +77,18 @@ def setup_logger():
 
     return logger
 
-
-# Создание глобального logger
 logs = setup_logger()
+#########################################################################
 
+# Функция для проверки и валидации сертефикатов
 def validate_cert_and_key(cert_file_path, key_file_path):
     if not os.path.isfile(cert_file_path):
-        logs.error(f"SSL certificate file '{cert_file_path}' does not exist.")
-        raise ValueError(f"SSL certificate file '{cert_file_path}' does not exist.")
+        logs.error(f"SSL сертефикат по пути '{cert_file_path}' не существует.")
+        raise ValueError(f"SSL сертефикат по пути '{cert_file_path}' не существует.")
 
     if not os.path.isfile(key_file_path):
-        logs.error(f"SSL key file '{key_file_path}' does not exist.")
-        raise ValueError(f"SSL key file '{key_file_path}' does not exist.")
+        logs.error(f"SSL ключ по пути '{key_file_path}' не существует.")
+        raise ValueError(f"SSL ключ по пути '{key_file_path}' не существует.")
 
     try:
         context = ssl.create_default_context()

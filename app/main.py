@@ -1,20 +1,21 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse, PlainTextResponse
+# Импорты основных библиотек
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
 
+# Импорты дополнительных библиотек
 import asyncio
-import tkinter as tk
-import os
+import tkinter
 import shutil
 
-from app.config import config, proxmark
-from app.utils.exceptions import render_error_page
-from app.utils.charge import start_reader
-from app.api.proxmark import proxmark_build
-from app.utils.gui import set_root, task_queue
+# Импорты встроенных скриптов
+from app import *
+from app.utils.charge import *
+from app.utils.exceptions import *
+from app.api.proxmark import *
 
 app = FastAPI()
 
@@ -25,7 +26,7 @@ app.mount("/images", StaticFiles(directory=config.IMAGES_DIR, html=True), name="
 app.mount("/videos", StaticFiles(directory=config.VIDEOS_DIR, html=True), name="videos")
 app.mount("/js", StaticFiles(directory=config.JS_DIR, html=False), name="js")
 
-# Настройка middleware для сессий
+# Настройка middleware для куки сессий
 app.add_middleware(
     SessionMiddleware,
     secret_key=os.urandom(64),
@@ -34,12 +35,10 @@ app.add_middleware(
     same_site="strict",
 )
 
-
-# Событие запуска приложения
+#################################################################################
 @app.on_event("startup")
 async def on_startup():
-    from app.database import init_db
-    init_db()
+    database.init_db()
     from app.routes import main, auth, profile, onvif, gallery
     app.include_router(main.router)
     app.include_router(auth.router)
@@ -57,26 +56,28 @@ async def on_startup():
         if ans == 1:
             asyncio.create_task(proxmark_build_task())
         else:
-            print("Продалжаем без Proxmark3...")
+            print("Продолжаем без Proxmark3...")
     else:
         print("Proxmark3 не найден")
-    print("Перейдите на ./register для получения секретного ключа.\n")
-
-# Событие остановки приложения
+#################################################################################
 @app.on_event("shutdown")
 async def on_shutdown():
-    # smth
     print("\nПриложение успешно остановлено.\n")
+#################################################################################
+
 
 # Асинхронная задача для эмулятора двери
 async def run_tkinter():
-    root = tk.Tk()
+    root = tkinter.Tk()
     root.title("Эмулятор")
-    root.geometry("150x150")
+    root.geometry("200x200")
     root.configure(bg="red")
     root.attributes("-topmost", True)
+    # Функция, делающая root глобальной переменной, чтобы другие скрипты могли с ней взаимодействовать
     set_root(root)
-
+    # Каждые 100 мс проверяется список очереди метода queue
+    # Если он не пустой, то происходит получение этого задания и его выполнение через лямбда функцию
+    # root.update() обновляет вид окна tkinter'а
     while True:
         while not task_queue.empty():
             task = task_queue.get()
@@ -108,11 +109,13 @@ async def start_reader_task():
     await asyncio.to_thread(start_reader)
 
 
-# Обработчики ошибок
+# Обработчики ошибок для отображения кастомных шаблонов при их появлении
+# Отдельный обработчик для ошибки 500 так как сервер не даст загрузить шаблон при подобной ошибке в обычном случае
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     return render_error_page(request, 500, "Internal Server Error")
 
+# Обработчик для остальных популярных ошибок
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     if exc.status_code in [404, 401, 403, 502, 503, 504]:
@@ -124,11 +127,11 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
             503: "Service Unavailable",
             504: "Gateway Timeout",
         }
-        message = error_map.get(exc.status_code, "Unknown Error Code")
+        message = error_map.get(exc.status_code, "Неизвестный код ошибки")
         return render_error_page(request, exc.status_code, message)
 
     return JSONResponse(
         status_code=exc.status_code,
-        content={"detail": exc.detail or "An error occurred"},
+        content={"detail": exc.detail or "Произошла ошибка"},
     )
 

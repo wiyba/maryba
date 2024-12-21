@@ -1,21 +1,20 @@
-from app.config import config
-from fastapi import Request
+from app import config
+
 import sqlite3
 
-# Скрипт для изменения UID, привязанного к пользователю в датабазе
-def submit_uid(request: Request, uid: str):
-    username = request.session.get('user')
-    if not username:
-        raise ValueError("Пользователь не авторизован")
-
+# Изменение uid привязанного к пользвоателю в датабазе
+def submit_uid(user: str, uid: str):
     conn = sqlite3.connect(config.DATABASE)
     cursor = conn.cursor()
 
     try:
-        cursor.execute("DELETE FROM proxmark WHERE username = ?", (username,))
-        cursor.execute("INSERT INTO proxmark (username, uid) VALUES (?, ?)", (username, uid))
+        # Создание / Обновление столбца uid в строке с username как в переменной user до переданного в функцию
+        cursor.execute("DELETE FROM proxmark WHERE username = ?", (user,))
+        cursor.execute("INSERT INTO proxmark (username, uid) VALUES (?, ?)", (user, uid))
         conn.commit()
+    # Так как в данной таблице параметры username и uid помечены как уникальные, при введении того UID что уже есть в таблице
+    # будет вызвана IntegrityError и данная ошибка
     except sqlite3.IntegrityError:
-        raise ValueError("Произошла ошибка при записи UID")
+        raise ValueError("Такой UID уже записан.")
     finally:
         conn.close()

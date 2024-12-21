@@ -1,5 +1,5 @@
-from app.main import app
-from app.api.session import get_current_user
+from app.api.auth import *
+
 from fastapi import Request, APIRouter
 from fastapi.responses import HTMLResponse
 

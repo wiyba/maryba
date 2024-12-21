@@ -1,9 +1,8 @@
-from app.main import app
-from fastapi import APIRouter
 from fastapi.responses import FileResponse
+from fastapi import APIRouter
 
 router = APIRouter()
 
-@app.get("/")
+@router.get("/")
 async def root():
     return FileResponse("templates/main.html")

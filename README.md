@@ -20,7 +20,6 @@ sudo bash -c "$(curl -sL https://raw.githubusercontent.com/wiyba/maryba/main/set
 The `install.sh` script also provides system management commands for handling the service itself. This includes operations such as installation, updating, and removal of the project and Docker components. The commands are as follows:
 
 - **Install**: Sets up Docker, pulls the necessary repository, builds the Docker image, and creates a systemd service.
-- **Update**: Pulls the latest changes, rebuilds the Docker image, and restarts the systemd service.
 - **Remove**: Stops the service, deletes the systemd configuration, Docker container, image, and all associated files.
 
 These commands ensure that the `maryba` service runs smoothly and can be easily maintained.

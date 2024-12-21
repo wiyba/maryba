@@ -1,37 +1,33 @@
-from app.main import templates
-from app.api.auth import delete_user
-from app.api.profile import submit_uid
-from app.api.session import get_current_user
+from app.api.profile import *
+from app.api.auth import *
+from app import templates
+
 from fastapi import APIRouter, Request, HTTPException, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
-from pydantic import BaseModel
 
 router = APIRouter()
 
+# Отображение шаблона /templates/profile.html
 @router.get("/profile", response_class=HTMLResponse)
 async def register_page(request: Request):
     get_current_user(request)
     return templates.TemplateResponse("profile.html", {"request": request})
 
+# При получени POST запроса изменяет UID в датабазе в соответствии с содержимым запроса, используя уже описанные мной функции.
 @router.post("/profile")
 async def register(request: Request, uid: str = Form(...)):
     try:
-        submit_uid(request, uid)
+        user = request.session.get('user')
+        submit_uid(get_current_user(request), uid)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
     return RedirectResponse("/", status_code=302)
 
-class DeleteProfileRequest(BaseModel):
-    confirmation: bool
-
+# При получении DELETE запроса выполняет уже описанную мной функцию delete_user для удаления пользователя из датабазы, если аккаунт был успешно удален, то перенаправляет на страницу /
 @router.delete("/profile")
-async def delete_profile(request: Request, data: DeleteProfileRequest):
-    if not data.confirmation:
-        raise HTTPException(status_code=400, detail="Подтверждение необходимо для удаления аккаунта.")
-
-    user_deleted = delete_user(get_current_user(request))
-    if not user_deleted:
+async def delete_profile(request: Request):
+    delete_user_req = delete_user(get_current_user(request))
+    if not delete_user_req:
         raise HTTPException(status_code=400, detail="Аккаунт не найден.")
-
-    return {"message": "Аккаунт успешно удален."}
+    return RedirectResponse("/", status_code=302)

@@ -1,11 +1,15 @@
+from app import onvif
+
 from fastapi import Request
+
 import cv2
 import subprocess
-from app.config import onvif
 
 ffmpeg_process_video = None
 streaming_active = False
 
+# Функция для проверки доступности камеры
+# Отправляет RTSP запрос через ffmpeg и проверяет, можно ли получить поток
 def check_camera_availability():
     try:
         print("Проверяем доступность камеры...")
@@ -19,7 +23,7 @@ def check_camera_availability():
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            timeout=10
+            timeout=5
         )
         if result.returncode != 0:
             print("Камера недоступна, останавливаем поток")
@@ -34,15 +38,18 @@ def check_camera_availability():
         print(f"Ошибка при проверке доступности камеры: {e}")
         return False
 
+# Асинхронная функция для запуска процесса ffmpeg
 async def start_ffmpeg():
     global ffmpeg_process_video, streaming_active
     print("Начинаем поток ffmpeg...")
 
+    # Проверка доступность камеры перед запуском
     if not check_camera_availability():
-        print("Невозможно начать поток ffmpeg потому что камера недоступна")
+        print("Камера недоступна")
         stop_ffmpeg()
         return
 
+    # Запуск потока ffmpeg на udp://127.0.0.1:1234 с указанными параметрами
     if ffmpeg_process_video is None or ffmpeg_process_video.poll() is not None:
         print("Запускаем процесс ffmpeg...")
         try:
@@ -70,7 +77,9 @@ async def start_ffmpeg():
 
     streaming_active = True
 
-
+# Функция для остановки процесса ffmpeg
+# Проверяет активен ли процесс, завершает его корректно или убивает в случае ошибки
+# Устанавливает переменные статуса потока в False
 def stop_ffmpeg():
     global ffmpeg_process_video, streaming_active
     if ffmpeg_process_video and ffmpeg_process_video.poll() is None:
@@ -92,10 +101,11 @@ def stop_ffmpeg():
     ffmpeg_process_video = None
     streaming_active = False
 
-
+# Асинхронная функция для обработки видеопотока
 async def video_stream(request: Request):
     global streaming_active
 
+    # Проверка статуса потока и запуск по необходимости
     if not streaming_active:
         await start_ffmpeg()
 
@@ -103,14 +113,16 @@ async def video_stream(request: Request):
         print("Поток не был начат, камера недоступна")
         return
 
+    # Считывает данные из видеопотока с помощью OpenCV и отдает кадры клиенту
+    # В случае ошибки или отключения клиента завершает поток и освобождает ресурсы
     cap = cv2.VideoCapture("udp://127.0.0.1:1234")
 
     if not cap.isOpened():
-        print("Failed to open video stream. Stopping stream.")
+        print("Не удалось открыть поток, остановка ffmpeg")
         stop_ffmpeg()
         return
 
-    print("Video stream opened successfully with OpenCV.")
+    print("Поток был успешно запущен через OpenCV.")
 
     try:
         while True:

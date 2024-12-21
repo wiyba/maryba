@@ -107,7 +107,7 @@
     </style>
 </head>
 <body>
-<!-- Страница для отображения обработанной картинки с кам -->
+<!-- Страница для отображения обработанной картинки с камеры -->
 <div class="video-container">
     <img alt="Загрузка картинки с камеры...." class="video-stream" src="/onvif_video">
     <a class="home-button" href="./">
@@ -118,21 +118,18 @@
         <h2>ONVIF device was not found</h2>
     </div>
     <div class="button-container">
-        <a class="home-button" href="#" onclick="openDoor()">
+        <a class="home-button" onclick="toggleDoor()">
             <img alt="Открыть дверь" src="/images/key.png">
         </a>
-        <a class="home-button" href="#" onclick="">
+        <a class="home-button" onclick="">
             <img alt="Включить звук" src="/images/mic.png">
         </a>
     </div>
 </div>
 <script>
-    async function openDoor() {
-        const response = await fetch("/onvif", {
+    async function toggleDoor() {
+        await fetch("/onvif", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
         });
     }
 </script>
