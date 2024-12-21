@@ -86,6 +86,7 @@ async def run_tkinter():
         await asyncio.sleep(0.1)
 
 
+
 # Асинхронная задача для сборки proxmark3
 async def proxmark_build_task():
     if not shutil.which("make"):
