@@ -8,7 +8,6 @@ from starlette.middleware.sessions import SessionMiddleware
 
 # Импорты дополнительных библиотек
 import asyncio
-import tkinter
 import shutil
 
 # Импорты встроенных скриптов
@@ -49,16 +48,16 @@ async def on_startup():
     if proxmark.device_name != '' and os.path.exists(proxmark.client_path):
         asyncio.create_task(start_reader_task())
         asyncio.create_task(run_tkinter())
-        print("Proxmark3 подключен")
+        print("Proxmark3 подключен\n")
     elif not os.path.exists(proxmark.client_path):
         print("Клиент Proxmark3 не найден")
         ans = int(input("Хотите ли забилдить сейчас? [0-1]: "))
         if ans == 1:
             asyncio.create_task(proxmark_build_task())
         else:
-            print("Продолжаем без Proxmark3...")
+            print("Продолжаем без Proxmark3...\n")
     else:
-        print("Proxmark3 не найден")
+        print("Proxmark3 не найден\n")
 #################################################################################
 @app.on_event("shutdown")
 async def on_shutdown():
@@ -68,6 +67,7 @@ async def on_shutdown():
 
 # Асинхронная задача для эмулятора двери
 async def run_tkinter():
+    import tkinter
     root = tkinter.Tk()
     root.title("Эмулятор")
     root.geometry("200x200")
