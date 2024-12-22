@@ -77,8 +77,6 @@ install_nginx() {
     done
 
     echo "Создаём конфигурацию Nginx..."
-    STATIC_DIR="$PROJECT_DIR/app/static"
-    mkdir -p "$STATIC_DIR"
 
     SSL_PATH="$CERTS_DIR/fullchain.pem"
     SSL_KEY="$CERTS_DIR/key.pem"
@@ -140,7 +138,7 @@ server {
     ssl_certificate_key $SSL_KEY;
 
     location /static/ {
-        root $STATIC_DIR;
+        root $PROJECT_DIR;
         autoindex on;
     }
 
