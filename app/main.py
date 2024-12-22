@@ -51,7 +51,7 @@ async def on_startup():
         print("Proxmark3 подключен\n")
     elif not os.path.exists(proxmark.client_path):
         print("Клиент Proxmark3 не найден")
-        ans = int(input("Хотите ли забилдить сейчас? [0-1]: "))
+        ans = 0 # todo: переместить проверку билда проксмарка из /app/main.py в /main.py
         if ans == 1:
             asyncio.create_task(proxmark_build_task())
         else:
