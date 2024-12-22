@@ -11,7 +11,6 @@ PORT="8000"
 
 PROJECT_DIR="/var/lib/$SERVICE_NAME"
 CERTS_DIR="$PROJECT_DIR/../${SERVICE_NAME}_certs"
-STATIC_DIR="$PROJECT_DIR/app/static"
 
 ACTION=$1
 if [[ -z "$ACTION" ]]; then
