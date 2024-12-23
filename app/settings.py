@@ -23,7 +23,7 @@ class Config:
 
 # Данные для подключения к onvif камере
 class Camera:
-    ip = '192.168.88.71'
+    ip = '192.168.95.71'
     user = 'admin'
     passwd = 'rubetek11'
     rtsp_url = f"rtsp://{user}:{passwd}@{ip}:8554/Streaming/Channels/101"

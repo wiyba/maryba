@@ -74,9 +74,11 @@ def start_reader():
 
             # После проверки юзернейма произведется пополнение баланса на 1
             charge_output, charge_error = execute_read("hf mfp recharge --bal 1")
+            # charge_output = "ok New balance: 1 "
+            # charge_error = None
             if charge_error:
                 print("Ошибка при выполнении команды hf mfp recharge:", charge_error)
-                break
+                continue
 
             # Если команда была успешно выполнена то
             if charge_output and "ok" in charge_output.lower():
