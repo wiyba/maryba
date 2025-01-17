@@ -1,15 +1,15 @@
-from app import onvif
+from app import *
 
-from fastapi import Request
+from fastapi import Request, HTTPException
+from fastapi.responses import StreamingResponse
 
-import cv2
+import asyncio
 import subprocess
+import cv2
 
 ffmpeg_process_video = None
 streaming_active = False
 
-# Функция для проверки доступности камеры
-# Отправляет RTSP запрос через ffmpeg и проверяет, можно ли получить поток
 def check_camera_availability():
     try:
         print("Проверяем доступность камеры...")
@@ -27,7 +27,6 @@ def check_camera_availability():
         )
         if result.returncode != 0:
             print("Камера недоступна, останавливаем поток")
-            print(f"Вывод ffmpeg: {result.stderr.decode()}")
             return False
         print("Камера доступна")
         return True
@@ -38,20 +37,11 @@ def check_camera_availability():
         print(f"Ошибка при проверке доступности камеры: {e}")
         return False
 
-# Асинхронная функция для запуска процесса ffmpeg
 async def start_ffmpeg():
     global ffmpeg_process_video, streaming_active
     print("Начинаем поток ffmpeg...")
 
-    # Проверка доступность камеры перед запуском
-    if not check_camera_availability():
-        print("Камера недоступна")
-        stop_ffmpeg()
-        return
-
-    # Запуск потока ffmpeg на udp://127.0.0.1:1234 с указанными параметрами
     if ffmpeg_process_video is None or ffmpeg_process_video.poll() is not None:
-        print("Запускаем процесс ffmpeg...")
         try:
             ffmpeg_process_video = subprocess.Popen([
                 'ffmpeg',
@@ -68,87 +58,93 @@ async def start_ffmpeg():
                 '-r', '25',
                 'udp://127.0.0.1:1234'
             ], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
-
-            print("Процесс ffmpeg был успешно запущен")
+            print("Процесс ffmpeg успешно запущен")
         except Exception as e:
-            print(f"Не удалось начать процесс ffmpeg: {e}")
+            print(f"Ошибка запуска ffmpeg: {e}")
             ffmpeg_process_video = None
             return
-
     streaming_active = True
 
-# Функция для остановки процесса ffmpeg
-# Проверяет активен ли процесс, завершает его корректно или убивает в случае ошибки
-# Устанавливает переменные статуса потока в False
 def stop_ffmpeg():
     global ffmpeg_process_video, streaming_active
     if ffmpeg_process_video and ffmpeg_process_video.poll() is None:
         try:
-            print("Останавливаем процесс ffmpeg...")
+            print("Останавливаем ffmpeg...")
             ffmpeg_process_video.terminate()
             ffmpeg_process_video.wait(timeout=5)
-            print("Процесс ffmpeg был успешно завершен")
+            print("Процесс ffmpeg успешно завершен")
         except subprocess.TimeoutExpired:
-            print("ffmpeg не удалось завершить вовремя. Пробуем kill()")
+            print("Не удалось завершить ffmpeg, убиваем процесс...")
             ffmpeg_process_video.kill()
-            print("Процесс ffmpeg был убит")
+            print("Процесс ffmpeg убит")
         except Exception as e:
-            print(f"Ошибка при завершении ffmpeg: {e}. Пробуем kill()")
+            print(f"Ошибка при завершении ffmpeg: {e}")
             ffmpeg_process_video.kill()
-            print("Процесс ffmpeg был убит")
-    else:
-        print("Процесс ffmpeg уже завершен")
     ffmpeg_process_video = None
     streaming_active = False
 
-# Асинхронная функция для обработки видеопотока
+async def start_onvif_task():
+    while True:
+        try:
+            print('test')
+            camera_available = await asyncio.to_thread(check_camera_availability)
+
+            if camera_available and not streaming_active:
+                await start_ffmpeg()
+
+            if not camera_available and streaming_active:
+                stop_ffmpeg()
+
+
+        except asyncio.CancelledError:
+            print("Задача start_onvif_task отменена, завершаем...")
+            stop_ffmpeg()
+            break
+        except Exception as e:
+            print(f"Ошибка в start_onvif_task: {e}")
+
+
 async def video_stream(request: Request):
     global streaming_active
 
-    # Проверка статуса потока и запуск по необходимости
     if not streaming_active:
-        await start_ffmpeg()
+        print("Поток неактивен, проверяем доступность камеры...")
+        camera_available = await asyncio.to_thread(check_camera_availability)
+        if camera_available:
+            await start_ffmpeg()
+        else:
+            raise HTTPException(status_code=503)
 
-    if not streaming_active:
-        print("Поток не был начат, камера недоступна")
-        return
-
-    # Считывает данные из видеопотока с помощью OpenCV и отдает кадры клиенту
-    # В случае ошибки или отключения клиента завершает поток и освобождает ресурсы
     cap = cv2.VideoCapture("udp://127.0.0.1:1234")
 
     if not cap.isOpened():
-        print("Не удалось открыть поток, остановка ffmpeg")
+        print("Не удалось открыть поток, останавливаем ffmpeg...")
         stop_ffmpeg()
-        return
+        raise HTTPException(status_code=500)
 
-    print("Поток был успешно запущен через OpenCV.")
+    print("Поток успешно открыт через OpenCV.")
 
     try:
         while True:
             if await request.is_disconnected():
-                print("Пользователь отключился, останавливаем поток")
+                print("Пользователь отключился, завершаем поток...")
                 break
 
             ret, frame = cap.read()
             if not ret:
-                print("Не удалось получить кадр, останавливаем поток")
+                print("Не удалось получить кадр, завершаем поток...")
                 break
 
             ret, buffer = cv2.imencode('.jpg', frame)
             if not ret:
-                print("Не удалось энкодировать кадр")
+                print("Не удалось закодировать кадр")
                 continue
 
-            frame_bytes = buffer.tobytes()
-
             yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+                   b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
-    except Exception as e:
-        print(f"Ошибка обработки потока: {e}")
-
+            await asyncio.sleep(0.04)
     finally:
         cap.release()
         stop_ffmpeg()
-        print("Поток был успешно завершен")
+        print("Поток завершён.")

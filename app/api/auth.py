@@ -124,4 +124,4 @@ async def session_status(request: Request):
         return {"authenticated": False}
 
     # Во всех других случаях сессия валидна, тогда возвращаем текущего юзера и подтверждаем то, что он авторизован
-    return {"authenticated": True, "username": user}
+    return {"authenticated": True, "username": user} 

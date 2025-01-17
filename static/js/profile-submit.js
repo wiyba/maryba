@@ -53,11 +53,10 @@ async function handleProfileDelete(event) {
                 method: 'DELETE',
             });
             if (response.ok) {
-                window.location.href = "/logout";
-            }
-            else {
+                window.location.href = "/";
+            } else {
                 const errorData = await response.json();
-                alert(errorData.detail || "Во время удаления аккаунта произошла ошибка, подробнее в консоли.");
+                alert(errorData.detail || "Во время удаления аккаунта произошла ошибка.");
             }
         }
         catch (error) {

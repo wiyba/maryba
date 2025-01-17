@@ -17,17 +17,18 @@ async def register_page(request: Request):
 @router.post("/profile")
 async def register(request: Request, uid: str = Form(...)):
     try:
-        user = request.session.get('user')
         submit_uid(get_current_user(request), uid)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-
     return RedirectResponse("/", status_code=302)
 
 # При получении DELETE запроса выполняет уже описанную мной функцию delete_user для удаления пользователя из датабазы, если аккаунт был успешно удален, то перенаправляет на страницу /
 @router.delete("/profile")
 async def delete_profile(request: Request):
-    delete_user_req = delete_user(get_current_user(request))
-    if not delete_user_req:
-        raise HTTPException(status_code=400, detail="Аккаунт не найден.")
-    return RedirectResponse("/", status_code=302)
+    user = get_current_user(request)
+    logout_user_req = logout_user(user)
+    delete_user_req = delete_user(user)
+    if not delete_user_req or not logout_user_req:
+        raise HTTPException(status_code=404)
+    return RedirectResponse(url="/", status_code=303)
+

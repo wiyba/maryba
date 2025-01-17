@@ -23,7 +23,7 @@ templates = Jinja2Templates(directory=config.TEMPLATES_DIR)
 app.mount("/static", StaticFiles(directory=config.STATIC_DIR, html=True), name="static")
 app.mount("/images", StaticFiles(directory=config.IMAGES_DIR, html=True), name="images")
 app.mount("/videos", StaticFiles(directory=config.VIDEOS_DIR, html=True), name="videos")
-app.mount("/js", StaticFiles(directory=config.JS_DIR, html=False), name="js")
+app.mount("/js", StaticFiles(directory=config.JS_DIR, html=True), name="js")
 
 # Настройка middleware для куки сессий
 app.add_middleware(
@@ -51,7 +51,7 @@ async def on_startup():
         print("Proxmark3 подключен\n")
     elif not os.path.exists(proxmark.client_path):
         print("Клиент Proxmark3 не найден")
-        ans = 0 # TODO: Удалить или переработать данный метод, при продакшене не получится сделать вывод и запрос input() из за програмных ограничений (скорее всего)
+        ans = int(input("Хотите ли собрать его сейчас? [0-1]: ")) # TODO: Удалить или переработать данный метод, при продакшене не получится сделать вывод и запрос input() из за програмных ограничений (скорее всего)
         if ans == 1:
             asyncio.create_task(proxmark_build_task())
         else:
@@ -106,8 +106,10 @@ async def proxmark_build_task():
 
 # Асинхронная задача для старта proxmark3
 async def start_reader_task():
-    # await asyncio.to_thread(proxmark_build)
     await asyncio.to_thread(start_reader)
+
+async def start_onvif_task():
+    await asyncio.to_thread(start_onvif_task)
 
 
 # Обработчики ошибок для отображения кастомных шаблонов при их появлении
