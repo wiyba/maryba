@@ -7,7 +7,7 @@ env_file = os.getenv("ENV_FILE_PATH", "/var/lib/maryba/.env")
 if Path(env_file).is_file():
     load_dotenv(env_file)
 else:
-    load_dotenv(".env")
+    load_dotenv(".env.dev")
 
 UVICORN_HOST = config("UVICORN_HOST", default="127.0.0.1")
 UVICORN_PORT = config("UVICORN_PORT", cast=int, default=8000)
