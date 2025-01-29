@@ -186,4 +186,4 @@ cert.pem
 key.pem
 0.0.0.0+1-key.pem
 0.0.0.0+1.pem
-
+.env.dev
