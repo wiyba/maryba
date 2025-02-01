@@ -16,5 +16,6 @@ sudo bash -c "$(curl -sL https://raw.githubusercontent.com/wiyba/maryba/main/set
 
 ## Дополнительная информация
 
-При необходимости можно установить acme.sh с помощью curl https://get.acme.sh | sh -s email=EMAIL.
-Для просмотра логов можно использовать tail -f /var/lib/maryba/server.log или bash /var/lib/maryba/setup.sh logs.
+При необходимости можно установить acme.sh с помощью curl https://get.acme.sh | sh -s email=EMAIL
+
+Для просмотра логов можно использовать tail -f /var/lib/maryba/server.log или bash /var/lib/maryba/setup.sh logs
