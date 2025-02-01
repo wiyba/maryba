@@ -3,11 +3,6 @@ from app import proxmark
 import os
 import subprocess
 
-# Ребилд софта для проксмарка
-def proxmark_build():
-    os.system('cd ./app/api/new-magic4pm3 && git submodule init && git submodule update && git pull origin vos5 && make -j client')
-
-
 # Скрипт для взаимодействия с proxmark3 и считывания ключкарты например
 def execute_read(command):
     try:

@@ -34,7 +34,7 @@ class Camera:
 
 class Proxmark:
     device_name = os.popen('ls /dev/ | grep tty.usbmodem').read().strip() # Название устройства в системе (предположительно работает только на macos)
-    client_path = "./app/api/new-magic4pm3/client/proxmark3" # Путь до клиента proxmark (приложения для взаимодействия)
+    client_path = "./app/api/pm3-software/client/proxmark3" # Путь до клиента proxmark (приложения для взаимодействия)
     device_port = f"/dev/{device_name}" # Путь до proxmark
 
 config = Config()
