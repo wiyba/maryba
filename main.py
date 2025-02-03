@@ -12,7 +12,7 @@ from settings import (DEBUG, UVICORN_HOST, UVICORN_PORT, UVICORN_SSL_CERTFILE,
                       UVICORN_SSL_KEYFILE, UVICORN_UDS)
 
 
-### Функция логгера заимствована из https://github.com/Gozargah/Marzban ###
+# Форматирование выводов в логгер
 class LogToLogger:
     def __init__(self, logger, level, original_stream):
         self.logger = logger
@@ -78,7 +78,6 @@ def setup_logger():
     return logger
 
 logs = setup_logger()
-#########################################################################
 
 # Функция для проверки и валидации сертефикатов
 def validate_cert_and_key(cert_file_path, key_file_path):

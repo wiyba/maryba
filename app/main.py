@@ -14,7 +14,7 @@ import shutil
 from app import *
 from app.utils.charge import *
 from app.utils.exceptions import *
-from app.api.proxmark import *
+from app.api.reader import *
 
 app = FastAPI()
 
@@ -45,19 +45,18 @@ async def on_startup():
     app.include_router(onvif.router)
     app.include_router(gallery.router)
     print("\nМодули успешно импортированы.")
-    if proxmark.device_name != '' and os.path.exists(proxmark.client_path):
+    if reader.device_name != '' and os.path.exists(reader.client_path):
         asyncio.create_task(start_reader_task())
-        asyncio.create_task(run_tkinter())
-        print("Proxmark3 подключен\n")
-    elif not os.path.exists(proxmark.client_path):
-        print("Клиент Proxmark3 не найден")
-        ans = int(input("Хотите ли собрать его сейчас? [0-1]: ")) # TODO: Удалить или переработать данный метод, при продакшене не получится сделать вывод и запрос input() из за програмных ограничений (скорее всего)
+        print("Считыватель подключен\n")
+    elif not os.path.exists(reader.client_path):
+        print("Клиент считывателя не найден")
+        ans = int(input("Хотите ли собрать его сейчас? [0-1]: "))
         if ans == 1:
-            asyncio.create_task(proxmark_build_task())
+            asyncio.create_task(reader_build_task())
         else:
-            print("Продолжаем без Proxmark3...\n")
+            print("Продолжаем без считывателя...\n")
     else:
-        print("Proxmark3 не найден\n")
+        print("Считыватель не найден\n")
 #################################################################################
 @app.on_event("shutdown")
 async def on_shutdown():
@@ -65,42 +64,20 @@ async def on_shutdown():
 #################################################################################
 
 
-# Асинхронная задача для эмулятора двери
-async def run_tkinter():
-    import tkinter
-    root = tkinter.Tk()
-    root.title("Эмулятор")
-    root.geometry("200x200")
-    root.configure(bg="red")
-    root.attributes("-topmost", True)
-    # Функция, делающая root глобальной переменной, чтобы другие скрипты могли с ней взаимодействовать
-    set_root(root)
-    # Каждые 100 мс проверяется список очереди метода queue
-    # Если он не пустой, то происходит получение этого задания и его выполнение через лямбда функцию
-    # root.update() обновляет вид окна tkinter'а
-    while True:
-        while not task_queue.empty():
-            task = task_queue.get()
-            task()
-        root.update()
-        await asyncio.sleep(0.1)
 
-
-
-# Асинхронная задача для сборки proxmark3
-async def proxmark_build_task():
+# Асинхронная задача для сборки софта считывателя
+async def reader_build_task():
     if not shutil.which("make"):
-        print('"make" не найдена. Сборка proxmark3 невозможна.')
+        print('"make" не найдена. Сборка софта для считывателя невозможна.')
     try:
         proxmark_build()
     except Exception as e:
-        print(f"Ошибка сборки proxmark3: {e}")
-    if not os.path.exists(proxmark.client_path):
+        print(f"Ошибка сборки софта для считывателя: {e}")
+    if not os.path.exists(reader.client_path):
         print("Неизвестная ошибка при инициализации или сборке proxmark3")
-    print("Софт Proxmark3 был успешно собран!")
+    print("Софт считывателя был успешно собран!")
     await start_reader_task()
-    await run_tkinter()
-    print("Перезапустите приложение для работы Proxmark3")
+    print("Перезапустите приложение для работы считывателя")
 
 
 

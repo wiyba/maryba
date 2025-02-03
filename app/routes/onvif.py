@@ -1,6 +1,5 @@
 from app.api.auth import *
 from app.api.onvif import *
-from app.utils.gui import *
 
 from fastapi import Request, APIRouter
 from fastapi.responses import HTMLResponse, StreamingResponse
@@ -16,13 +15,6 @@ async def onvif_get(request: Request):
     with open("templates/onvif.html", "r", encoding="utf-8") as file:
         html_content = file.read()
     return HTMLResponse(content=html_content)
-
-# При получении POST запроса переключает цвет окна эмуляции. В будущем change_color() можно поменять на что нибудь другое.
-# Сейчас используется для переключения цвета после нажатия кнопки открытия двери на странице /onvif
-@router.post("/onvif")
-async def onvif_post(request: Request):
-    get_current_user(request)
-    change_color()
 
 # Роут для необработанной передачи кадров потока с IP ONVIF камеры в браузер. Получение картинки происходит в скрипте /app/api/onvif.py
 @router.get("/onvif_video")

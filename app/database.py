@@ -24,9 +24,25 @@ def init_db():
     )
     """)
 
-    # Таблица proxmark
+    # Таблица камер
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS proxmark (
+    CREATE TABLE IF NOT EXISTS cameras (
+        id INTEGER PRIMARY KEY,
+        location TEXT NOT NULL
+    )
+    """)
+
+    # Таблица считывателей
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS readers (
+        id INTEGER PRIMARY KEY,
+        location TEXT NOT NULL
+    )
+    """)
+
+    # Таблица ключей
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS keys (
         id INTEGER PRIMARY KEY,
         username TEXT UNIQUE NOT NULL,
         uid TEXT UNIQUE NOT NULL,

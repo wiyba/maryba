@@ -1,5 +1,4 @@
-from app.api.proxmark import *
-from app.utils.gui import *
+from app.api.reader import *
 from app import config
 
 import sqlite3
@@ -12,8 +11,8 @@ def get_user_by_uid(uid):
     conn = sqlite3.connect(config.DATABASE)
     cursor = conn.cursor()
 
-    # Выводит значение столбца username в таблице proxmark из той строчки где uid равен полученному при выводе
-    cursor.execute("SELECT username FROM proxmark WHERE uid = ?", (uid,))
+    # Выводит значение столбца username в таблице keys из той строчки где uid равен полученному при выводе
+    cursor.execute("SELECT username FROM keys WHERE uid = ?", (uid,))
     result = cursor.fetchone()
     conn.close()
 
@@ -26,8 +25,8 @@ def update_counter(uid, balance):
     conn = sqlite3.connect(config.DATABASE)
     cursor = conn.cursor()
 
-    # Обновляет значение таблицы proxmark в столбце counter в строчке где uid равен полученному при выводе
-    cursor.execute("UPDATE proxmark SET counter = ? WHERE uid = ?", (balance, uid))
+    # Обновляет значение таблицы keys в столбце counter в строчке где uid равен полученному при выводе
+    cursor.execute("UPDATE keys SET counter = ? WHERE uid = ?", (balance, uid))
 
     conn.commit()
     conn.close()
@@ -46,7 +45,7 @@ def extract_balance(output):
         return int(match.group(1), 16)
     return None
 
-# Функция для исполнения команд в cli proxmark3 используя апи из ./api/proxmark.py
+# Функция для исполнения команд в cli считывателя используя апи
 def start_reader():
     while True:
         # Данный цикл бесконечно выполняет hf 14a read пока команда не даст вывод в output
@@ -54,7 +53,7 @@ def start_reader():
 
         # Если error становится чем либо то это сигнализирует об ошибке и делает отладочный вывод
         if error:
-            print("Ошибка при выполнении команды hf 14a read:", error)
+            print("Ошибка при выполнении команды:", error)
             break
 
         # Если output становится чем либо, то производится извлечение UID и имени пользователя к которому он привязан.
@@ -86,8 +85,6 @@ def start_reader():
                 balance = extract_balance(charge_output)
                 print(f"Количество проходов: {balance}")
                 update_counter(uid, balance)
-                # Меняется цвет эмулятора двери, сигнализируя о том что дверь открыта
-                change_color()
                 print("Дверь открыта!")
                 time.sleep(2.3)
 

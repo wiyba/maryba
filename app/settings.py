@@ -32,11 +32,11 @@ class Camera:
     streaming_active = False
     camera_check_task = None
 
-class Proxmark:
+class Reader:
     device_name = os.popen('ls /dev/ | grep tty.usbmodem').read().strip() # Название устройства в системе (предположительно работает только на macos)
-    client_path = "./app/api/pm3-software/client/proxmark3" # Путь до клиента proxmark (приложения для взаимодействия)
-    device_port = f"/dev/{device_name}" # Путь до proxmark
+    client_path = "./app/api/reader-software/client/proxmark3" # Путь до клиента считывателя (приложения для взаимодействия)
+    device_port = f"/dev/{device_name}" # Путь до считывателя
 
 config = Config()
 onvif = Camera()
-proxmark = Proxmark()
+reader = Reader()
