@@ -1,14 +1,17 @@
-from app import proxmark
+from app import reader
 
 import os
 import subprocess
+
+def proxmark_build():
+    os.system('cd ./app/api/pm3-software && make -j client')
 
 # Скрипт для взаимодействия с proxmark3 и считывания ключкарты например
 def execute_read(command):
     try:
         # При вызове функции выполнится команда proxmark.client_path, "-p", proxmark.device_port, "-c", command, ее вывод будет захвачен через stdout и stderr в виде текста
         process = subprocess.Popen(
-            [proxmark.client_path, "-p", proxmark.device_port, "-c", command],
+            [reader.client_path, "-p", reader.device_port, "-c", command],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True

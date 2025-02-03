@@ -9,8 +9,8 @@ def submit_uid(user: str, uid: str):
 
     try:
         # Создание / Обновление столбца uid в строке с username как в переменной user до переданного в функцию
-        cursor.execute("DELETE FROM proxmark WHERE username = ?", (user,))
-        cursor.execute("INSERT INTO proxmark (username, uid) VALUES (?, ?)", (user, uid))
+        cursor.execute("DELETE FROM keys WHERE username = ?", (user,))
+        cursor.execute("INSERT INTO keys (username, uid) VALUES (?, ?)", (user, uid))
         conn.commit()
     # Так как в данной таблице параметры username и uid помечены как уникальные, при введении того UID что уже есть в таблице
     # будет вызвана IntegrityError и данная ошибка
