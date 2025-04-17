@@ -90,17 +90,21 @@ async def run_tkinter():
 # Асинхронная задача для сборки proxmark3
 async def proxmark_build_task():
     if not shutil.which("make"):
-        print('"make" не найдена. Сборка proxmark3 невозможна.')
+        print('"make" не найдена, пропускаем сборку Proxmark3. Продолжаем без Proxmark3...\n')
+        return
     try:
         proxmark_build()
     except Exception as e:
         print(f"Ошибка сборки proxmark3: {e}")
+        return 
     if not os.path.exists(proxmark.client_path):
-        print("Неизвестная ошибка при инициализации или сборке proxmark3")
+        print("Не удалось найти собранный клиент proxmark3. Продолжаем без Proxmark3...\n")
+        return
     print("Софт Proxmark3 был успешно собран!")
-    await start_reader_task()
-    await run_tkinter()
+    asyncio.create_task(start_reader_task())
+    asyncio.create_task(run_tkinter())
     print("Перезапустите приложение для работы Proxmark3")
+
 
 
 
