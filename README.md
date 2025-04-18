@@ -1,28 +1,51 @@
-## maryba (camera portal)
-A website that was created to implement the idea of creating an intercom based on PM3 and an IP camera that works with ONVIF.
-There is an account system and soon there will be the ability to interact with the reader itself.
+## maryba
 
-### Installation and Updates
-To install, update, or uninstall the maryba service, you can use the following commands:
+Веб-сайт, созданный для реализации идеи домофона на основе Proxmark3 (PM3) и IP-камеры с поддержкой ONVIF.  
+Уже есть система аккаунтов, и в будущем планируется возможность взаимодействия с самим считывателем.
 
-#### Install
+### Установка и обновления
+
+Для установки, обновления или удаления сервиса **maryba** можно использовать следующие команды:
+
+#### Установка
 
 ```sh
 sudo bash -c "$(curl -sL https://raw.githubusercontent.com/wiyba/maryba/main/setup.sh)" @ install
 ```
 
-#### Uninstall
+#### Удаление
+
 ```sh
 sudo bash -c "$(curl -sL https://raw.githubusercontent.com/wiyba/maryba/main/setup.sh)" @ uninstall
 ```
 
-### Service Management
-The `install.sh` script also provides system management commands for handling the service itself. This includes operations such as installation, updating, and removal of the project and Docker components. The commands are as follows:
+### Управление сервисом
 
-- **Install**: Sets up Docker, pulls the necessary repository, builds the Docker image, and creates a systemd service.
-- **Remove**: Stops the service, deletes the systemd configuration, Docker container, image, and all associated files.
+Скрипт `setup.sh` также предоставляет команды для управления сервисом: установка, обновление и удаление проекта и компонентов Docker.
 
-These commands ensure that the `maryba` service runs smoothly and can be easily maintained.
+Основные действия:
 
-### Other Information
-You can use `curl https://get.acme.sh | sh -s email=EMAIL` to install acme.sh if needed. You can view logs using `tail -f /var/lib/maryba/server.log` or `bash /var/lib/maryba/setup.sh logs`.
+- **Установка** — настраивает Docker, клонирует репозиторий, собирает Docker-образ и создаёт systemd-сервис.
+- **Удаление** — останавливает сервис, удаляет конфигурацию systemd, контейнер, образ и все связанные файлы.
+
+Эти команды позволяют просто управлять `maryba` и поддерживать его в рабочем состоянии.
+
+### Дополнительно
+
+Если понадобится, можно установить `acme.sh` для сертификатов с помощью:
+
+```sh
+curl https://get.acme.sh | sh -s email=EMAIL
+```
+
+Просмотр логов доступен через:
+
+```sh
+tail -f /var/lib/maryba/server.log
+```
+
+или
+
+```sh
+bash /var/lib/maryba/setup.sh logs
+```
