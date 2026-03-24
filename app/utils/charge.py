@@ -1,93 +1,151 @@
-from app.api.reader import *
-from app import config
-
 import sqlite3
+import threading
 import time
-import re
+from datetime import datetime
+
+from app.api.onvif import get_camera
+from app.api.reader import OSDPReader, SerialReader
+from app.settings import config
+from app.utils import relay
+from app.utils.anomaly import detector
+
+serial = SerialReader()
+serial_lock = threading.Lock()
+stop = False
+paused = False
 
 
-# Получение никнейма из датабазы используя полученный из вывода UID
+## нужны глобально для работы функции перезаписи ##
+def stop_reader():
+    global stop
+    stop = True
+
+
+def pause_reader():
+    global paused
+    paused = True
+
+
+def resume_reader():
+    global paused
+    paused = False
+
+
+#####################################################
+
+
+def start_reader():
+    while not stop:
+        if paused:
+            time.sleep(0.1)
+            continue
+
+        with serial_lock:
+            uid, balance, error = serial.read_card()
+
+        if error:
+            continue
+
+        print(" ")
+        username = get_user_by_uid(uid)
+        if not username:
+            print(f"ReaderManager: невалидный идентификатор {uid}")
+            log_event(uid, None, "invalid_card")
+            continue
+
+        if balance is None:
+            print(f"ReaderManager: ошибка чтения баланса {uid}")
+            continue
+
+        print(f"ReaderManager: {uid} -> {username}")
+
+        level, reason = detector.check(uid, username, balance)
+
+        if level == "ban":
+            print(f"AnomalyManager: {username} -> {uid} заблокирован")
+            log_event(uid, username, "banned", balance, 1, reason)
+            continue
+
+        if level != "safe":
+            print(f"AnomalyManager: {level} -> {reason}")
+
+        conn = sqlite3.connect(config.DATABASE)
+        stored = conn.execute(
+            "SELECT counter FROM keys WHERE uid = ?", (uid,)
+        ).fetchone()
+        conn.close()
+        db_value = stored[0] if stored else balance
+
+        new_balance = db_value + 1
+
+        with serial_lock:
+            success, error = serial.write_balance(new_balance)
+
+        if not success:
+            print(f"ReaderManager: ошибка записи — {error}")
+            continue
+
+        update_counter(uid, new_balance)
+        relay.off()
+
+        if level == "warn":
+            event_type = "warning"
+        elif level == "suspicious":
+            event_type = "suspicious"
+        else:
+            event_type = "success"
+
+        print(f"ReaderManager: balance == {balance} -> {new_balance}")
+        log_event(
+            uid,
+            username,
+            event_type,
+            new_balance,
+            1 if level != "safe" else 0,
+            reason if level != "safe" else None,
+        )
+        time.sleep(config.RELAY_DURATION)
+        relay.on()
+
+
 def get_user_by_uid(uid):
     conn = sqlite3.connect(config.DATABASE)
-    cursor = conn.cursor()
-
-    # Выводит значение столбца username в таблице keys из той строчки где uid равен полученному при выводе
-    cursor.execute("SELECT username FROM keys WHERE uid = ?", (uid,))
-    result = cursor.fetchone()
+    row = conn.execute("SELECT username FROM keys WHERE uid = ?", (uid,)).fetchone()
     conn.close()
+    return row[0] if row else None
 
-    if result:
-        return result[0]
-    return None
 
-# Обновление счетчика проходов
 def update_counter(uid, balance):
     conn = sqlite3.connect(config.DATABASE)
-    cursor = conn.cursor()
-
-    # Обновляет значение таблицы keys в столбце counter в строчке где uid равен полученному при выводе
-    cursor.execute("UPDATE keys SET counter = ? WHERE uid = ?", (balance, uid))
-
+    conn.execute("UPDATE keys SET counter = ? WHERE uid = ?", (balance, uid))
     conn.commit()
     conn.close()
 
-# Извлечение UID из вывода для функции ниже
-def extract_uid(output):
-    match = re.search(r"UID:\s*([A-F0-9 ]+)", output)
-    if match:
-        return match.group(1).strip()
-    return None
 
-# Извлечение баланса из вывода для функции ниже
-def extract_balance(output):
-    match = re.search(r"New balance:\s*([0-9A-F]+)", output)
-    if match:
-        return int(match.group(1), 16)
-    return None
+def log_event(
+    uid, username, event_type, balance=None, is_suspicious=0, anomaly_reason=None
+):
+    conn = sqlite3.connect(config.DATABASE)
+    timestamp = int(time.time())
+    video_path = None
 
-# Функция для исполнения команд в cli считывателя используя апи
-def start_reader():
-    while True:
-        # Данный цикл бесконечно выполняет hf 14a read пока команда не даст вывод в output
-        output, error = execute_read("hf 14a read")
+    cam = get_camera()
+    if cam:
+        ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        video_path = cam.save_buffer(f"{ts}_{username or 'unknown'}_{event_type}")
 
-        # Если error становится чем либо то это сигнализирует об ошибке и делает отладочный вывод
-        if error:
-            print("Ошибка при выполнении команды:", error)
-            break
-
-        # Если output становится чем либо, то производится извлечение UID и имени пользователя к которому он привязан.
-        # После извлечения баланс карты пополняется на один (баланс это количество проходов).
-        if output:
-            uid = extract_uid(output)
-            print(f"Метка найдена: {uid}")
-            username = get_user_by_uid(uid)
-
-            # Если в датабазе будет найден юзернейм то выведется отладочное сообщение с никнеймом и UID
-            # Если в датабазе не будет найдена строка с получемнным UID то цикл чтения продолжится
-            if username:
-                print(f"Метка найдена: {uid}, Пользователь: {username}")
-            else:
-                print(f"Метка {uid} невалидная.")
-                continue
-
-            # После проверки юзернейма произведется пополнение баланса на 1
-            charge_output, charge_error = execute_read("hf mfp recharge --bal 1")
-            # charge_output = "ok New balance: 1 "
-            # charge_error = None
-            if charge_error:
-                print("Ошибка при выполнении команды hf mfp recharge:", charge_error)
-                continue
-
-            # Если команда была успешно выполнена то
-            if charge_output and "ok" in charge_output.lower():
-                # Из вывода выполненных команд извлекается баланс
-                balance = extract_balance(charge_output)
-                print(f"Количество проходов: {balance}")
-                update_counter(uid, balance)
-                print("Дверь открыта!")
-                time.sleep(2.3)
-
-            # Если charge_output будет какая либо другая ошибка то будет данный отладочный вывод
-            else:
-                print("Не удалось добавить проход:", charge_output or "Нет данных")
+    conn.execute(
+        "INSERT INTO events (timestamp, uid, username, event_type, balance, video_path, is_suspicious, anomaly_reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        (
+            timestamp,
+            uid,
+            username,
+            event_type,
+            balance,
+            video_path,
+            is_suspicious,
+            anomaly_reason,
+        ),
+    )
+    conn.commit()
+    conn.close()

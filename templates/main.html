@@ -1,187 +1,209 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Панель</title>
-  <link href="/images/favicon.png" rel="icon" type="image/png">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Montserrat', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #1e1e1e;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
+    <head>
+        <meta charset="UTF-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <title>Панель</title>
+        <link href="/images/favicon.png" rel="icon" type="image/png" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            body {
+                font-family: "Montserrat", sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #1e1e1e;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+            }
 
-    .container {
-      width: 90vw;
-      height: 90vh;
-      max-width: 600px;
-      max-height: 600px;
-      background: linear-gradient(145deg, #2b2b2b, #1a1a1a);
-      border-radius: 20px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px;
-      box-sizing: border-box;
-      animation: fadeIn 1.3s ease-in-out forwards;
-      opacity: 0;
-    }
+            .container {
+                width: 90vw;
+                height: 90vh;
+                max-width: 600px;
+                max-height: 600px;
+                background: linear-gradient(145deg, #2b2b2b, #1a1a1a);
+                border-radius: 20px;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: space-between;
+                padding: 20px;
+                box-sizing: border-box;
+                animation: fadeIn 1.3s ease-in-out forwards;
+                opacity: 0;
+            }
 
-    @keyframes fadeIn {
-      0% { opacity: 0; transform: translateY(20px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
+            @keyframes fadeIn {
+                0% {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
 
-    .title-container {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      box-sizing: border-box;
-      border-bottom: 2px solid #4CAF50;
-      padding: 0 10px 10px;
-      margin-bottom: 10px;
-    }
+            .title-container {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+                box-sizing: border-box;
+                border-bottom: 2px solid #4caf50;
+                padding: 0 10px 10px;
+                margin-bottom: 10px;
+            }
 
-    .title {
-      font-size: 34px;
-      color: #4CAF50;
-      font-weight: 700;
-    }
+            .title {
+                font-size: 34px;
+                color: #4caf50;
+                font-weight: 700;
+            }
 
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+            .user-info {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
 
-    .username {
-      font-size: 16px;
-      color: #f0f0f0;
-      background-color: #2b2b2b;
-      text-decoration: none;
-      padding: 8px;
-      border-radius: 10px;
-    }
+            .username {
+                font-size: 16px;
+                color: #f0f0f0;
+                background-color: #2b2b2b;
+                text-decoration: none;
+                padding: 8px;
+                border-radius: 10px;
+            }
 
-    .login-link {
-      font-size: 16px;
-      color: #4CAF50;
-      text-decoration: none;
-      transition: background-color 0.4s, color 0.4s, transform 0.2s;
-      padding: 8px;
-      background-color: #2b2b2b;
-      border-radius: 10px;
-    }
+            .login-link {
+                font-size: 16px;
+                color: #4caf50;
+                text-decoration: none;
+                transition:
+                    background-color 0.4s,
+                    color 0.4s,
+                    transform 0.2s;
+                padding: 8px;
+                background-color: #2b2b2b;
+                border-radius: 10px;
+            }
 
-    .login-link:hover {
-      background-color: #4CAF50;
-      color: #ffffff;
-      transform: scale(1.1);
-    }
+            .login-link:hover {
+                background-color: #4caf50;
+                color: #ffffff;
+                transform: scale(1.1);
+            }
 
-    .text-field {
-      width: calc(100% - 40px);
-      height: 100%;
-      flex-grow: 1;
-      padding: 15px;
-      margin: 20px 0;
-      border-radius: 10px;
-      border: 1px solid #333333;
-      background-color: #2b2b2b;
-      color: #f0f0f0;
-      font-size: 16px;
-      outline: none;
-      text-align: left;
-      resize: none;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      line-height: 1.4;
-      overflow: hidden;
-    }
+            .text-field {
+                width: calc(100% - 40px);
+                height: 100%;
+                flex-grow: 1;
+                padding: 15px;
+                margin: 20px 0;
+                border-radius: 10px;
+                border: 1px solid #333333;
+                background-color: #2b2b2b;
+                color: #f0f0f0;
+                font-size: 16px;
+                outline: none;
+                text-align: left;
+                resize: none;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                line-height: 1.4;
+                overflow: hidden;
+            }
 
-    .bottom-container {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      padding: 20px;
-      box-sizing: border-box;
-    }
+            .bottom-container {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                padding: 20px;
+                box-sizing: border-box;
+            }
 
-    .left-buttons, .right-buttons {
-      display: flex;
-      gap: 20px;
-    }
+            .left-buttons,
+            .right-buttons {
+                display: flex;
+                gap: 20px;
+            }
 
-    .round-button {
-      width: 60px;
-      height: 60px;
-      background-color: #4CAF50;
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-decoration: none;
-      transition: background-color 0.4s, transform 0.2s;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      cursor: pointer;
-    }
+            .round-button {
+                width: 60px;
+                height: 60px;
+                background-color: #4caf50;
+                color: white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-decoration: none;
+                transition:
+                    background-color 0.4s,
+                    transform 0.2s;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                cursor: pointer;
+            }
 
-    .round-button img {
-      width: 32px;
-      height: 32px;
-    }
+            .round-button img {
+                width: 32px;
+                height: 32px;
+            }
 
-    .round-button:hover {
-      background-color: #313131;
-      transform: scale(1.1);
-    }
+            .round-button:hover {
+                background-color: #313131;
+                transform: scale(1.1);
+            }
 
-    .visually-hidden {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      border: 0;
-    }
-  </style>
-</head>
-<body>
-<div class="container">
-  <div class="title-container">
-    <div class="title">Панель</div>
-    <div class="user-info">
-      <a class="username" href="/profile" id="username">Гость</a>
-      <a class="login-link" href="/login" id="login-link">Войти</a>
-    </div>
-  </div>
-  <label class="visually-hidden" for="text-field">Description</label>
-  <textarea class="text-field" id="text-field" readonly>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</textarea>
-  <div class="bottom-container">
-    <div class="left-buttons">
-      <a class="round-button" href="./gallery">
-        <img alt="Галлерея" src="/images/gallery.png">
-      </a>
-    </div>
-    <div class="right-buttons">
-      <a class="round-button" href="./onvif">
-        <img alt="Камера" src="/images/onvif.png">
-      </a>
-    </div>
-  </div>
-</div>
-<script src="/js/main-script.js"></script>
-</body>
+            .visually-hidden {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                border: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="title-container">
+                <div class="title">Панель</div>
+                <div class="user-info">
+                    <a class="username" href="/profile" id="username">Гость</a>
+                    <a class="login-link" href="/login" id="login-link"
+                        >Войти</a
+                    >
+                </div>
+            </div>
+            <label class="visually-hidden" for="text-field">Description</label>
+            <textarea class="text-field" id="text-field" readonly>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</textarea
+            >
+            <div class="bottom-container">
+                <div class="left-buttons">
+                    <a class="round-button" href="./gallery">
+                        <img alt="Галлерея" src="/images/gallery.png" />
+                    </a>
+                    <a class="round-button" href="./security">
+                        <img alt="Безопасность" src="/images/key.png" />
+                    </a>
+                </div>
+                <div class="right-buttons">
+                    <a class="round-button" href="./onvif">
+                        <img alt="Камера" src="/images/onvif.png" />
+                    </a>
+                </div>
+            </div>
+        </div>
+        <script src="/js/main-script.js"></script>
+    </body>
 </html>

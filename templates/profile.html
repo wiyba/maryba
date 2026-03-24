@@ -1,186 +1,291 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>Профиль</title>
-    <link href="/images/favicon.png" rel="icon" type="image/png">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Montserrat', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #1e1e1e;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-
-        .container {
-            width: 90vw;
-            max-width: 400px;
-            background: linear-gradient(145deg, #2b2b2b, #1a1a1a);
-            border-radius: 20px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-            padding: 30px;
-            box-sizing: border-box;
-        }
-
-        .title-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #4CAF50;
-            padding-left: 10px;
-            box-sizing: border-box;
-        }
-
-        .title {
-            font-size: 34px;
-            color: #4CAF50;
-            font-weight: 700;
-        }
-
-        .button-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            padding-top: 20px;
-            gap: 20px;
-        }
-
-        .custom-button {
-            width: 60px;
-            height: 60px;
-            background-color: #4CAF50;
-            color: #ffffff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            border: none;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background-color 0.4s, transform 0.2s;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .custom-button:hover {
-            background-color: #313131;
-            transform: scale(1.1);
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .input-container {
-            position: relative;
-            width: 100%;
-        }
-
-        .input-container input {
-            width: 100%;
-            padding: 15px;
-            font-size: 16px;
-            border-radius: 10px;
-            border: 1px solid #333333;
-            background-color: #2b2b2b;
-            color: #f0f0f0;
-            outline: none;
-            transition: background-color 0.4s, border-color 0.4s;
-            box-sizing: border-box;
-        }
-
-        .input-container input::placeholder {
-            color: #7a7a7a;
-        }
-
-        .input-container input:focus {
-            background-color: #1a1a1a;
-            border-color: #4CAF50;
-        }
-
-        .input-container::after {
-            content: attr(data-placeholder-right);
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-            color: #7a7a7a;
-        }
-
-        .delete-button {
-            width: 100%;
-            padding: 15px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #ffffff;
-            background: linear-gradient(145deg, #8B3434, #561A1A);
-            border-radius: 10px;
-            border: 2px solid #D55B5B;
-            text-align: center;
-            cursor: pointer;
-            transition: background-color 0.4s, transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-        }
-
-        .delete-button:hover {
-            background-color: #A93232;
-            transform: scale(1.05);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-        }
-
-        .icon-image {
-            width: 30px;
-            height: 30px;
-        }
-    </style>
-</head>
-<body>
-<div class="container">
-    <div class="title-container">
-        <div class="title">Профиль</div>
-    </div>
-    <!-- Форма для изменения UID или удаления аккаунта -->
-    <form onsubmit="handleProfileSubmit(event)">
-        <div class="input-container" data-placeholder-right="8 символов">
-            <input id="uid-input" maxlength="11" name="uid" placeholder="UID ключа" required type="text">
-        </div>
-        <button class="delete-button" onclick="handleProfileDelete(event)" type="button">УДАЛИТЬ АККАУНТ</button>
-        <div class="button-container">
-            <a class="custom-button" href="./"><img alt="Домой" class="icon-image" src="/images/home.png"></a>
-            <button class="custom-button" type="submit">
-                <img alt="Подтвердить" class="icon-image" src="/images/arrow.png">
-            </button>
-        </div>
-    </form>
-</div>
-<script>
-    // Скрипт для форматирования ввода UID
-    const uidInput = document.getElementById('uid-input');
-    uidInput.addEventListener('input', () => {
-        let value = uidInput.value.replace(/[^A-F0-9]/gi, '').toUpperCase();
-        let formattedValue = '';
-        for (let i = 0; i < value.length; i++) {
-            if (i > 0 && i % 2 === 0) {
-                formattedValue += ' ';
+    <head>
+        <meta charset="UTF-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <title>Профиль</title>
+        <link href="/images/favicon.png" rel="icon" type="image/png" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            body {
+                font-family: "Montserrat", sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #1e1e1e;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
             }
-            formattedValue += value[i];
-        }
-        uidInput.value = formattedValue;
-    });
-</script>
-<script src="/js/profile-submit.js"></script>
-</body>
+
+            .container {
+                width: 90vw;
+                max-width: 400px;
+                background: linear-gradient(145deg, #2b2b2b, #1a1a1a);
+                border-radius: 20px;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+                padding: 30px;
+                box-sizing: border-box;
+            }
+
+            .title-container {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+                border-bottom: 2px solid #4caf50;
+                padding-left: 10px;
+                box-sizing: border-box;
+            }
+
+            .title {
+                font-size: 34px;
+                color: #4caf50;
+                font-weight: 700;
+            }
+
+            .button-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                width: 100%;
+                padding-top: 20px;
+                gap: 20px;
+            }
+
+            .custom-button {
+                width: 60px;
+                height: 60px;
+                background-color: #4caf50;
+                color: #ffffff;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                border: none;
+                cursor: pointer;
+                text-decoration: none;
+                transition:
+                    background-color 0.4s,
+                    transform 0.2s;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            }
+
+            .custom-button:hover {
+                background-color: #313131;
+                transform: scale(1.1);
+            }
+
+            form {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .input-container {
+                position: relative;
+                width: 100%;
+            }
+
+            .input-container input {
+                width: 100%;
+                padding: 15px;
+                font-size: 16px;
+                border-radius: 10px;
+                border: 1px solid #333333;
+                background-color: #2b2b2b;
+                color: #f0f0f0;
+                outline: none;
+                transition:
+                    background-color 0.4s,
+                    border-color 0.4s;
+                box-sizing: border-box;
+            }
+
+            .input-container input::placeholder {
+                color: #7a7a7a;
+            }
+
+            .input-container input:focus {
+                background-color: #1a1a1a;
+                border-color: #4caf50;
+            }
+
+            .input-container::after {
+                content: attr(data-placeholder-right);
+                position: absolute;
+                right: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+                pointer-events: none;
+                color: #7a7a7a;
+            }
+
+            .write-button {
+                width: 100%;
+                padding: 15px;
+                font-size: 16px;
+                font-weight: bold;
+                color: #ffffff;
+                background: linear-gradient(145deg, #4caf50, #2b6b2d);
+                border-radius: 10px;
+                border: 2px solid #66bb6a;
+                text-align: center;
+                cursor: pointer;
+                transition:
+                    background-color 0.4s,
+                    transform 0.2s,
+                    box-shadow 0.2s;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            }
+
+            .write-button:hover {
+                background-color: #45a049;
+                transform: scale(1.05);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            }
+
+            .write-button:disabled {
+                background: linear-gradient(145deg, #ffa726, #f57c00);
+                border-color: #ffb74d;
+                cursor: wait;
+            }
+
+            .delete-button {
+                width: 100%;
+                padding: 15px;
+                font-size: 16px;
+                font-weight: bold;
+                color: #ffffff;
+                background: linear-gradient(145deg, #8b3434, #561a1a);
+                border-radius: 10px;
+                border: 2px solid #d55b5b;
+                text-align: center;
+                cursor: pointer;
+                transition:
+                    background-color 0.4s,
+                    transform 0.2s,
+                    box-shadow 0.2s;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            }
+
+            .delete-button:hover {
+                background-color: #a93232;
+                transform: scale(1.05);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            }
+
+            .icon-image {
+                width: 30px;
+                height: 30px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="title-container">
+                <div class="title">Профиль</div>
+            </div>
+            <form onsubmit="handleProfileSubmit(event)">
+                <div
+                    class="input-container"
+                    data-placeholder-right="HEX"
+                >
+                    <input
+                        id="uid-input"
+                        name="uid"
+                        placeholder="UID ключа"
+                        required
+                        type="text"
+                    />
+                </div>
+                <button
+                    class="write-button"
+                    onclick="handleWriteCard(event)"
+                    type="button"
+                >
+                    ЗАПИСАТЬ КАРТУ
+                </button>
+                <button
+                    class="delete-button"
+                    onclick="handleProfileDelete(event)"
+                    type="button"
+                >
+                    УДАЛИТЬ АККАУНТ
+                </button>
+                <div class="button-container">
+                    <a class="custom-button" href="./"
+                        ><img
+                            alt="Домой"
+                            class="icon-image"
+                            src="/images/home.png"
+                    /></a>
+                    <button class="custom-button" type="submit">
+                        <img
+                            alt="Подтвердить"
+                            class="icon-image"
+                            src="/images/arrow.png"
+                        />
+                    </button>
+                </div>
+            </form>
+        </div>
+        <script>
+            const uidInput = document.getElementById("uid-input");
+            uidInput.addEventListener("input", () => {
+                let value = uidInput.value
+                    .replace(/[^A-F0-9]/gi, "")
+                    .toUpperCase();
+                let formattedValue = "";
+                for (let i = 0; i < value.length; i++) {
+                    if (i > 0 && i % 2 === 0) {
+                        formattedValue += " ";
+                    }
+                    formattedValue += value[i];
+                }
+                uidInput.value = formattedValue;
+            });
+
+            async function handleWriteCard(event) {
+                event.preventDefault();
+
+                const button = event.target;
+                button.disabled = true;
+                button.textContent = "ПРИЛОЖИТЕ КАРТУ...";
+
+                try {
+                    const response = await fetch("/api/write_card", {
+                        method: "POST",
+                        credentials: "include",
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        alert(
+                            `Успешно\nUID: ${result.uid}\nCounter: ${result.counter}`,
+                        );
+                        document.getElementById("uid-input").value = result.uid;
+                    } else {
+                        alert(
+                            "Ошибка: " +
+                                (result.detail || "Не удалось записать карту"),
+                        );
+                    }
+                } catch (error) {
+                    alert("Ошибка соединения с бекендом");
+                } finally {
+                    button.disabled = false;
+                    button.textContent = "ЗАПИСАТЬ КАРТУ";
+                }
+            }
+        </script>
+        <script src="/js/profile-submit.js"></script>
+    </body>
 </html>

@@ -1,34 +1,83 @@
-from app.api.profile import *
-from app.api.auth import *
-from app import templates
+import asyncio
+import sqlite3
 
-from fastapi import APIRouter, Request, HTTPException, Form
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import APIRouter, Form, HTTPException, Request
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+
+from app.api.auth import auth
+from app.routes import templates
+from app.settings import config
+from app.utils import relay
+from app.utils.charge import pause_reader, resume_reader, serial, serial_lock
 
 router = APIRouter()
 
-# Отображение шаблона /templates/profile.html
+
 @router.get("/profile", response_class=HTMLResponse)
-async def register_page(request: Request):
-    get_current_user(request)
+async def profile_page(request: Request):
+    auth.get_current_user(request)
     return templates.TemplateResponse("profile.html", {"request": request})
 
-# При получени POST запроса изменяет UID в датабазе в соответствии с содержимым запроса, используя уже описанные мной функции.
+
 @router.post("/profile")
-async def register(request: Request, uid: str = Form(...)):
+async def update_uid(request: Request, uid: str = Form(...)):
     try:
-        submit_uid(get_current_user(request), uid)
+        auth.submit_uid(auth.get_current_user(request), uid)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     return RedirectResponse("/", status_code=302)
 
-# При получении DELETE запроса выполняет уже описанную мной функцию delete_user для удаления пользователя из датабазы, если аккаунт был успешно удален, то перенаправляет на страницу /
+
 @router.delete("/profile")
 async def delete_profile(request: Request):
-    user = get_current_user(request)
-    logout_user_req = logout_user(user)
-    delete_user_req = delete_user(user)
-    if not delete_user_req or not logout_user_req:
-        raise HTTPException(status_code=404)
+    user = auth.get_current_user(request)
+    auth.logout(user)
+    auth.delete(user)
     return RedirectResponse(url="/", status_code=303)
 
+
+@router.post("/api/write_card")
+async def write_card(request: Request):
+    username = auth.get_current_user(request)
+
+    pause_reader()
+    await asyncio.sleep(0.3)
+
+    relay.off()
+    try:
+        uid = None
+        for i in range(50):
+            with serial_lock:
+                found_uid, _ = serial.read_uid()
+            if found_uid:
+                uid = found_uid
+                break
+            await asyncio.sleep(0.2)
+
+        if not uid:
+            raise HTTPException(
+                status_code=400, detail="Карта не обнаружена за 10 секунд"
+            )
+
+        with serial_lock:
+            success, error = serial.write_balance(0)
+
+        if not success:
+            raise HTTPException(status_code=500, detail=f"Ошибка записи: {error}")
+
+        conn = sqlite3.connect(config.DATABASE)
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE keys SET uid = ?, counter = 0, warnings = 0 WHERE username = ?",
+            (uid, username),
+        )
+        conn.commit()
+        conn.close()
+
+        asyncio.get_event_loop().call_later(5, relay.on)
+        asyncio.get_event_loop().call_later(5, resume_reader)
+        return JSONResponse({"uid": uid, "counter": 0})
+    except Exception:
+        relay.on()
+        resume_reader()
+        raise

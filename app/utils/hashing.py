@@ -1,9 +1,9 @@
 import bcrypt
 
-# Функция для хеширования пароля
-def hash_password(password: str) -> str:
+
+def hash_password(password):
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
-# Функция для проверки того, что указанный пароль совпадает с хешем
-def verify_password(password: str, hashed: str) -> bool:
+
+def verify_password(password, hashed):
     return bcrypt.checkpw(password.encode(), hashed.encode())

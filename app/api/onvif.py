@@ -1,150 +1,144 @@
-from app import *
-
-from fastapi import Request, HTTPException
-from fastapi.responses import StreamingResponse
-
 import asyncio
+import os
 import subprocess
+import threading
+from collections import deque
+from datetime import datetime
+
 import cv2
 
-ffmpeg_process_video = None
-streaming_active = False
-
-def check_camera_availability():
-    try:
-        print("Проверяем доступность камеры...")
-        result = subprocess.run(
-            [
-                'ffmpeg',
-                '-rtsp_transport', 'tcp',
-                '-i', onvif.rtsp_url,
-                '-t', '3',
-                '-f', 'null', '-'
-            ],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            timeout=5
-        )
-        if result.returncode != 0:
-            print("Камера недоступна, останавливаем поток")
-            return False
-        print("Камера доступна")
-        return True
-    except subprocess.TimeoutExpired:
-        print("Таймаут проверки камеры")
-        return False
-    except Exception as e:
-        print(f"Ошибка при проверке доступности камеры: {e}")
-        return False
-
-async def start_ffmpeg():
-    global ffmpeg_process_video, streaming_active
-    print("Начинаем поток ffmpeg...")
-
-    if ffmpeg_process_video is None or ffmpeg_process_video.poll() is not None:
-        try:
-            ffmpeg_process_video = subprocess.Popen([
-                'ffmpeg',
-                '-rtsp_transport', 'tcp',
-                '-fflags', 'nobuffer',
-                '-flags', 'low_delay',
-                '-analyzeduration', '1000000',
-                '-probesize', '1000000',
-                '-fflags', '+discardcorrupt',
-                '-i', onvif.rtsp_url,
-                '-f', 'mpegts',
-                '-codec:v', 'mpeg1video',
-                '-q:v', '5',
-                '-r', '25',
-                'udp://127.0.0.1:1234'
-            ], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
-            print("Процесс ffmpeg успешно запущен")
-        except Exception as e:
-            print(f"Ошибка запуска ffmpeg: {e}")
-            ffmpeg_process_video = None
-            return
-    streaming_active = True
-
-def stop_ffmpeg():
-    global ffmpeg_process_video, streaming_active
-    if ffmpeg_process_video and ffmpeg_process_video.poll() is None:
-        try:
-            print("Останавливаем ffmpeg...")
-            ffmpeg_process_video.terminate()
-            ffmpeg_process_video.wait(timeout=5)
-            print("Процесс ffmpeg успешно завершен")
-        except subprocess.TimeoutExpired:
-            print("Не удалось завершить ffmpeg, убиваем процесс...")
-            ffmpeg_process_video.kill()
-            print("Процесс ffmpeg убит")
-        except Exception as e:
-            print(f"Ошибка при завершении ffmpeg: {e}")
-            ffmpeg_process_video.kill()
-    ffmpeg_process_video = None
-    streaming_active = False
-
-async def start_onvif_task():
-    while True:
-        try:
-            print('test')
-            camera_available = await asyncio.to_thread(check_camera_availability)
-
-            if camera_available and not streaming_active:
-                await start_ffmpeg()
-
-            if not camera_available and streaming_active:
-                stop_ffmpeg()
+from app.settings import camera
 
 
-        except asyncio.CancelledError:
-            print("Задача start_onvif_task отменена, завершаем...")
-            stop_ffmpeg()
-            break
-        except Exception as e:
-            print(f"Ошибка в start_onvif_task: {e}")
+class CameraManager:
+    def __init__(self):
+        self.cap = None
+        self.frame = None
+        self.buffer = deque(maxlen=int(camera.buffer_duration * camera.fps))
+        self.frame_lock = threading.Lock()
+        self.running = False
+        os.makedirs(camera.recordings_dir, exist_ok=True)
+        self._start_capture()
 
-
-async def video_stream(request: Request):
-    global streaming_active
-
-    if not streaming_active:
-        print("Поток неактивен, проверяем доступность камеры...")
-        camera_available = await asyncio.to_thread(check_camera_availability)
-        if camera_available:
-            await start_ffmpeg()
+    def _start_capture(self):
+        source = camera.source
+        if isinstance(source, str) and source.startswith("rtsp://"):
+            os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;tcp"
+            self.cap = cv2.VideoCapture(source, cv2.CAP_FFMPEG)
         else:
-            raise HTTPException(status_code=503)
+            self.cap = cv2.VideoCapture(source)
+        self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, camera.frame_width)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, camera.frame_height)
+        self.cap.set(cv2.CAP_PROP_FPS, camera.fps)
+        if not self.cap.isOpened():
+            raise RuntimeError(
+                f"CameraManager: не удалось подключиться к {camera.source}"
+            )
+        self.running = True
+        threading.Thread(target=self._capture_loop, daemon=True).start()
+        print(f"CameraManager: подключено к {camera.source}")
 
-    cap = cv2.VideoCapture("udp://127.0.0.1:1234")
+    def _capture_loop(self):
+        while self.running and self.cap:
+            self.cap.grab()
+            ret, frame = self.cap.retrieve()
+            if ret:
+                with self.frame_lock:
+                    self.frame = frame
+                    self.buffer.append(frame.copy())
 
-    if not cap.isOpened():
-        print("Не удалось открыть поток, останавливаем ffmpeg...")
-        stop_ffmpeg()
-        raise HTTPException(status_code=500)
+    def get_frame(self):
+        with self.frame_lock:
+            return self.frame.copy() if self.frame is not None else None
 
-    print("Поток успешно открыт через OpenCV.")
+    def save_buffer(self, filename):
+        with self.frame_lock:
+            frames = list(self.buffer)
+        if not frames:
+            return None
+        date_folder = datetime.now().strftime("%Y-%m-%d")
+        save_dir = os.path.join(camera.recordings_dir, date_folder)
+        os.makedirs(save_dir, exist_ok=True)
+        video_path = os.path.join(save_dir, f"{filename}.mp4")
+        threading.Thread(
+            target=self._save_video, args=(frames, video_path), daemon=True
+        ).start()
+        return video_path
 
+    def _save_video(self, frames, video_path):
+        try:
+            height, width = frames[0].shape[:2]
+            temp_path = video_path.replace(".mp4", "_temp.mp4")
+            out = cv2.VideoWriter(
+                temp_path, cv2.VideoWriter_fourcc(*"mp4v"), camera.fps, (width, height)
+            )
+            if not out.isOpened():
+                return
+            for frame in frames:
+                out.write(frame)
+            out.release()
+
+            result = subprocess.run(
+                [
+                    "ffmpeg",
+                    "-i",
+                    temp_path,
+                    "-c:v",
+                    "libx264",
+                    "-preset",
+                    "ultrafast",
+                    "-y",
+                    video_path,
+                ],
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode == 0:
+                os.remove(temp_path)
+            else:
+                os.rename(temp_path, video_path)
+        except Exception as e:
+            print(f"CameraManager: ошибка сохранения - {e}")
+
+    def stop(self):
+        self.running = False
+        if self.cap:
+            self.cap.release()
+
+
+camera_manager = None
+
+
+def init_camera():
+    global camera_manager
     try:
-        while True:
-            if await request.is_disconnected():
-                print("Пользователь отключился, завершаем поток...")
-                break
+        camera_manager = CameraManager()
+    except Exception as e:
+        print(f"CameraManager: {e}")
 
-            ret, frame = cap.read()
-            if not ret:
-                print("Не удалось получить кадр, завершаем поток...")
-                break
 
-            ret, buffer = cv2.imencode('.jpg', frame)
-            if not ret:
-                print("Не удалось закодировать кадр")
-                continue
+def get_camera():
+    return camera_manager
 
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
-            await asyncio.sleep(0.04)
-    finally:
-        cap.release()
-        stop_ffmpeg()
-        print("Поток завершён.")
+async def video_stream(request):
+    while True:
+        if await request.is_disconnected():
+            break
+        if not camera_manager:
+            await asyncio.sleep(1)
+            continue
+        frame = camera_manager.get_frame()
+        if frame is None:
+            await asyncio.sleep(0.1)
+            continue
+        ret, buffer = cv2.imencode(
+            ".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, camera.jpeg_quality]
+        )
+        if not ret:
+            continue
+        yield (
+            b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n"
+        )
+        await asyncio.sleep(1.0 / camera.fps)

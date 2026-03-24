@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-        <title>Записи проходов</title>
+        <title>Безопасность</title>
         <link href="/images/favicon.png" rel="icon" type="image/png" />
         <link
             href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap"
@@ -31,7 +31,7 @@
             }
 
             h1 {
-                color: #4caf50;
+                color: #f44336;
                 margin: 0;
             }
 
@@ -69,10 +69,11 @@
                 border-radius: 10px;
                 overflow: hidden;
                 box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+                margin-bottom: 30px;
             }
 
             th {
-                background-color: #4caf50;
+                background-color: #f44336;
                 color: white;
                 padding: 15px;
                 text-align: left;
@@ -86,31 +87,6 @@
 
             tr:hover {
                 background-color: #252525;
-            }
-
-            .status-success {
-                color: #4caf50;
-                font-weight: bold;
-            }
-
-            .status-suspicious {
-                color: #ffc107;
-                font-weight: bold;
-            }
-
-            .status-warning {
-                color: #ff9800;
-                font-weight: bold;
-            }
-
-            .status-banned {
-                color: #f44336;
-                font-weight: bold;
-            }
-
-            .status-invalid {
-                color: #888;
-                font-weight: bold;
             }
 
             .video-link {
@@ -166,21 +142,28 @@
                 width: 100%;
                 border-radius: 10px;
             }
+
+            .reason {
+                font-family: monospace;
+                font-size: 12px;
+                color: #ff9800;
+            }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="header">
-                <h1>Записи проходов</h1>
+                <h1>Безопасность</h1>
                 <a class="home-button" href="./">
                     <img alt="Домой" src="/images/home.png" />
                 </a>
             </div>
 
-            <div id="content">
-                <div class="loading">Загрузка событий...</div>
+            <div id="anomalies">
+                <div class="loading">Загрузка аномалий...</div>
             </div>
         </div>
+
         <div id="videoModal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
@@ -189,16 +172,16 @@
         </div>
 
         <script>
-            async function loadEvents() {
+            async function loadAnomalies() {
                 try {
-                    const response = await fetch("/api/events", {
+                    const response = await fetch("/api/suspicious_events", {
                         credentials: "include",
                     });
                     const events = await response.json();
 
                     if (events.length === 0) {
-                        document.getElementById("content").innerHTML =
-                            '<div class="loading">Нет записанных событий</div>';
+                        document.getElementById("anomalies").innerHTML =
+                            '<div class="loading">Нет аномалий</div>';
                         return;
                     }
 
@@ -209,8 +192,8 @@
                         <th>Дата и время</th>
                         <th>Пользователь</th>
                         <th>UID</th>
-                        <th>Статус</th>
                         <th>Баланс</th>
+                        <th>Причина</th>
                         <th>Видео</th>
                     </tr>
                 </thead>
@@ -218,17 +201,6 @@
         `;
 
                     events.forEach((event) => {
-                        const statusMap = {
-                            success: "status-success",
-                            suspicious: "status-suspicious",
-                            warning: "status-warning",
-                            banned: "status-banned",
-                            invalid_card: "status-invalid",
-                            manual: "status-success",
-                        };
-                        let statusClass =
-                            statusMap[event.event_type] || "status-success";
-
                         let videoLink = "-";
                         if (event.video_path) {
                             const pathParts = event.video_path.split("/");
@@ -242,18 +214,18 @@
                     <td>${event.datetime}</td>
                     <td>${event.username}</td>
                     <td><code>${event.uid || "-"}</code></td>
-                    <td class="${statusClass}">${event.event_label}</td>
                     <td>${event.balance !== null ? event.balance : "-"}</td>
+                    <td><span class="reason">${event.reason || "-"}</span></td>
                     <td>${videoLink}</td>
                 </tr>
             `;
                     });
 
                     tableHTML += "</tbody></table>";
-                    document.getElementById("content").innerHTML = tableHTML;
+                    document.getElementById("anomalies").innerHTML = tableHTML;
                 } catch (error) {
-                    console.error("Ошибка загрузки событий:", error);
-                    document.getElementById("content").innerHTML =
+                    console.error("Ошибка загрузки аномалий:", error);
+                    document.getElementById("anomalies").innerHTML =
                         '<div class="loading">Ошибка загрузки данных</div>';
                 }
             }
@@ -265,12 +237,14 @@
                 modal.style.display = "block";
                 video.play();
             }
+
             document.querySelector(".close").onclick = function () {
                 const modal = document.getElementById("videoModal");
                 const video = document.getElementById("videoPlayer");
                 video.pause();
                 modal.style.display = "none";
             };
+
             window.onclick = function (event) {
                 const modal = document.getElementById("videoModal");
                 if (event.target == modal) {
@@ -279,7 +253,8 @@
                     modal.style.display = "none";
                 }
             };
-            loadEvents();
+
+            loadAnomalies();
         </script>
     </body>
 </html>

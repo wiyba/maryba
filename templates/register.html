@@ -1,207 +1,271 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>Регистрация</title>
-    <link href="/images/favicon.png" rel="icon" type="image/png">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Montserrat', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #1e1e1e;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-
-        .container {
-            width: 90vw;
-            max-width: 400px;
-            background: linear-gradient(145deg, #2b2b2b, #1a1a1a);
-            border-radius: 20px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-            padding: 30px;
-            box-sizing: border-box;
-        }
-
-        .title-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #4CAF50;
-            padding-left: 10px;
-            box-sizing: border-box;
-        }
-
-        .title {
-            font-size: 34px;
-            color: #4CAF50;
-            font-weight: 700;
-        }
-
-        .button-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            padding-top: 20px;
-            gap: 20px;
-        }
-
-        .log-button {
-            padding: 8px 15px;
-            font-size: 16px;
-            background-color: #2b2b2b;
-            color: #4CAF50;
-            border-radius: 10px;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.4s, color 0.4s, transform 0.2s;
-        }
-
-        .log-button:hover {
-            background-color: #4CAF50;
-            color: #ffffff;
-            transform: scale(1.1);
-        }
-
-        .custom-button {
-            width: 60px;
-            height: 60px;
-            background-color: #4CAF50;
-            color: #ffffff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            border: none;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background-color 0.4s, transform 0.2s;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .custom-button:hover {
-            background-color: #313131;
-            transform: scale(1.1);
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .input-container {
-            position: relative;
-            width: 100%;
-        }
-
-        .input-container input {
-            width: 100%;
-            padding: 15px;
-            font-size: 16px;
-            border-radius: 10px;
-            border: 1px solid #333333;
-            background-color: #2b2b2b;
-            color: #f0f0f0;
-            outline: none;
-            transition: background-color 0.4s, border-color 0.4s;
-            box-sizing: border-box;
-        }
-
-        .input-container input::placeholder {
-            color: #7a7a7a;
-        }
-
-        .input-container input:focus {
-            background-color: #1a1a1a;
-            border-color: #4CAF50;
-        }
-
-        .input-container::after {
-            content: attr(data-placeholder-right);
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-            color: #7a7a7a;
-            padding: 0 5px;
-            z-index: 1;
-            transition: opacity 0.2s;
-            opacity: 1;
-        }
-
-        .input-container.text-overlap::after {
-            opacity: 0;
-        }
-
-        .icon-image {
-            width: 30px;
-            height: 30px;
-        }
-    </style>
-</head>
-<body>
-<div class="container">
-    <div class="title-container">
-        <div class="title">Регистрация</div>
-        <a class="log-button" href="/login">Вход</a>
-    </div>
-    <!-- Форма для регистрации -->
-    <form onsubmit="handleSignUp(event)">
-        <div class="input-container" data-placeholder-right="4-18 симовлов">
-            <input maxlength="18" name="username" pattern="\w+" placeholder="Никнейм" required title="Никнейм" type="text">
-        </div>
-        <div class="input-container" data-placeholder-right="8-32 символов">
-            <input maxlength="32" name="password" pattern="\S+" placeholder="Пароль" required title="Пароль" type="password">
-        </div>
-        <div class="input-container">
-            <input maxlength="32" name="password_confirm" pattern="\S+" placeholder="Подтверждение пароля" required title="Подтверждение пароля" type="password">
-        </div>
-        <div class="input-container" data-placeholder-right="32 символа">
-            <input maxlength="32" name="security_key" placeholder="Секретный ключ" required title="Секретный ключ" type="password">
-        </div>
-        <div class="button-container">
-            <a class="custom-button" href="/"><img alt="Домой" class="icon-image" src="/images/home.png"></a>
-            <button class="custom-button" type="submit">
-                <img alt="Зарегистрироваться" class="icon-image" src="/images/plus.png">
-            </button>
-        </div>
-    </form>
-</div>
-<script>
-    // Фильтр символов для полей username и password
-    document.querySelectorAll('input[name="username"], input[name="password"]').forEach(input => {
-        input.addEventListener('input', () => {
-            input.value = input.value.replace(/[^A-Za-zА-Яа-я0-9_]/g, '');
-        });
-    });
-
-    // Делает плейсхолдер невидимым при вводе 5+ символов
-    document.querySelectorAll('.input-container input').forEach(input => {
-        input.addEventListener('input', () => {
-            const container = input.parentElement;
-
-            if (input.value.length >= 8) {
-                container.classList.add('text-overlap');
-            } else {
-                container.classList.remove('text-overlap');
+    <head>
+        <meta charset="UTF-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <title>Регистрация</title>
+        <link href="/images/favicon.png" rel="icon" type="image/png" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            body {
+                font-family: "Montserrat", sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #1e1e1e;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
             }
-        });
-    });
-</script>
-<script src="/js/register-validation.js"></script>
-</body>
+
+            .container {
+                width: 90vw;
+                max-width: 400px;
+                background: linear-gradient(145deg, #2b2b2b, #1a1a1a);
+                border-radius: 20px;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+                padding: 30px;
+                box-sizing: border-box;
+            }
+
+            .title-container {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+                border-bottom: 2px solid #4caf50;
+                padding-left: 10px;
+                box-sizing: border-box;
+            }
+
+            .title {
+                font-size: 34px;
+                color: #4caf50;
+                font-weight: 700;
+            }
+
+            .button-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                width: 100%;
+                padding-top: 20px;
+                gap: 20px;
+            }
+
+            .log-button {
+                padding: 8px 15px;
+                font-size: 16px;
+                background-color: #2b2b2b;
+                color: #4caf50;
+                border-radius: 10px;
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition:
+                    background-color 0.4s,
+                    color 0.4s,
+                    transform 0.2s;
+            }
+
+            .log-button:hover {
+                background-color: #4caf50;
+                color: #ffffff;
+                transform: scale(1.1);
+            }
+
+            .custom-button {
+                width: 60px;
+                height: 60px;
+                background-color: #4caf50;
+                color: #ffffff;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                border: none;
+                cursor: pointer;
+                text-decoration: none;
+                transition:
+                    background-color 0.4s,
+                    transform 0.2s;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            }
+
+            .custom-button:hover {
+                background-color: #313131;
+                transform: scale(1.1);
+            }
+
+            form {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .input-container {
+                position: relative;
+                width: 100%;
+            }
+
+            .input-container input {
+                width: 100%;
+                padding: 15px;
+                font-size: 16px;
+                border-radius: 10px;
+                border: 1px solid #333333;
+                background-color: #2b2b2b;
+                color: #f0f0f0;
+                outline: none;
+                transition:
+                    background-color 0.4s,
+                    border-color 0.4s;
+                box-sizing: border-box;
+            }
+
+            .input-container input::placeholder {
+                color: #7a7a7a;
+            }
+
+            .input-container input:focus {
+                background-color: #1a1a1a;
+                border-color: #4caf50;
+            }
+
+            .input-container::after {
+                content: attr(data-placeholder-right);
+                position: absolute;
+                right: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+                pointer-events: none;
+                color: #7a7a7a;
+                padding: 0 5px;
+                z-index: 1;
+                transition: opacity 0.2s;
+                opacity: 1;
+            }
+
+            .input-container.text-overlap::after {
+                opacity: 0;
+            }
+
+            .icon-image {
+                width: 30px;
+                height: 30px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="title-container">
+                <div class="title">Регистрация</div>
+                <a class="log-button" href="/login">Вход</a>
+            </div>
+            <form onsubmit="handleSignUp(event)">
+                <div
+                    class="input-container"
+                    data-placeholder-right="4-18 симовлов"
+                >
+                    <input
+                        maxlength="18"
+                        name="username"
+                        pattern="\w+"
+                        placeholder="Имя пользователя"
+                        required
+                        title="Имя пользователя"
+                        type="text"
+                    />
+                </div>
+                <div
+                    class="input-container"
+                    data-placeholder-right="8-32 символов"
+                >
+                    <input
+                        maxlength="32"
+                        name="password"
+                        pattern="\S+"
+                        placeholder="Пароль"
+                        required
+                        title="Пароль"
+                        type="password"
+                    />
+                </div>
+                <div class="input-container">
+                    <input
+                        maxlength="32"
+                        name="password_confirm"
+                        pattern="\S+"
+                        placeholder="Подтверждение пароля"
+                        required
+                        title="Подтверждение пароля"
+                        type="password"
+                    />
+                </div>
+                <div
+                    class="input-container"
+                    data-placeholder-right="32 символа"
+                >
+                    <input
+                        maxlength="32"
+                        name="security_key"
+                        placeholder="Секретный ключ"
+                        required
+                        title="Секретный ключ"
+                        type="password"
+                    />
+                </div>
+                <div class="button-container">
+                    <a class="custom-button" href="/"
+                        ><img
+                            alt="Домой"
+                            class="icon-image"
+                            src="/images/home.png"
+                    /></a>
+                    <button class="custom-button" type="submit">
+                        <img
+                            alt="Зарегистрироваться"
+                            class="icon-image"
+                            src="/images/plus.png"
+                        />
+                    </button>
+                </div>
+            </form>
+        </div>
+        <script>
+            document
+                .querySelectorAll(
+                    'input[name="username"], input[name="password"]',
+                )
+                .forEach((input) => {
+                    input.addEventListener("input", () => {
+                        input.value = input.value.replace(
+                            /[^A-Za-zА-Яа-я0-9_]/g,
+                            "",
+                        );
+                    });
+                });
+            document
+                .querySelectorAll(".input-container input")
+                .forEach((input) => {
+                    input.addEventListener("input", () => {
+                        const container = input.parentElement;
+
+                        if (input.value.length >= 8) {
+                            container.classList.add("text-overlap");
+                        } else {
+                            container.classList.remove("text-overlap");
+                        }
+                    });
+                });
+        </script>
+        <script src="/js/register-validation.js"></script>
+    </body>
 </html>

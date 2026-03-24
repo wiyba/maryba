@@ -3,7 +3,7 @@ cd / || exit
 LOGFILE="/var/log/maryba.log"
 PROJECT_LOGFILE="/var/lib/maryba/server.log"
 exec > >(tee -a "$LOGFILE") 2>&1
-trap 'echo "Ошибка на строке $LINENO: Команда завершилась с кодом $?. Завершаем скрипт." >&2' ERR
+trap 'echo "error on line $LINENO === exit code $?" >&2' ERR
 
 SERVICE_NAME="maryba"
 SERVICE_FILE="/etc/systemd/system/$SERVICE_NAME.service"
@@ -14,11 +14,10 @@ CERTS_DIR="$PROJECT_DIR/../${SERVICE_NAME}_certs"
 
 ACTION=$1
 if [[ -z "$ACTION" ]]; then
-    echo "Использование: $0 [install|uninstall|logs]"
+    echo "usage: $0 [install|uninstall|logs|nftables]"
     exit 1
 fi
 
-# Функция для проверки и установки программ
 check_and_install() {
     local cmd=$1
     local package=$2
@@ -32,7 +31,7 @@ check_and_install() {
         elif [[ -f /etc/arch-release ]]; then
             sudo pacman -Syu --noconfirm "$package"
         else
-            echo "Неподдерживаемая ОС. Установка $package невозможна."
+            echo "Неподдерживаемая ОС"
             exit 1
         fi
     else
@@ -168,11 +167,9 @@ install_project() {
     check_and_install git git
     check_and_install python3 python3
 
-    # Клонирование репозитория
     git clone https://github.com/wiyba/maryba "$PROJECT_DIR"
     cp "$PROJECT_DIR/.env.example" "$PROJECT_DIR/.env"
 
-    # Активация виртуального окружения
     python3 -m venv "$PROJECT_DIR/venv"
     source "$PROJECT_DIR/venv/bin/activate"
     cd $PROJECT_DIR || exit
@@ -215,6 +212,41 @@ logging() {
     tail -f "$PROJECT_LOGFILE"
 }
 
+setup_nftables() {
+    shift
+    local CAMERA_IPS="$@"
+    if [ -z "$CAMERA_IPS" ]; then
+        echo "Использование: $0 nftables <ip камеры> [ip ...]"
+        echo "Пример: $0 nftables 10.0.0.1"
+        exit 1
+    fi
+
+    local SERVER_IP
+    SERVER_IP=$(hostname -I | awk '{print $1}')
+    echo "Сервер: $SERVER_IP"
+
+    nft flush ruleset
+    nft add table inet maryba
+    nft add chain inet maryba input '{ type filter hook input priority 0; policy accept; }'
+    nft add chain inet maryba forward '{ type filter hook forward priority 0; policy accept; }'
+
+    nft add rule inet maryba input ct state established,related accept
+    nft add rule inet maryba input iif lo accept
+    nft add rule inet maryba input tcp dport "$PORT" accept
+    nft add rule inet maryba input tcp dport 2222 accept
+    nft add rule inet maryba input icmp type echo-request accept
+
+    for CAM in $CAMERA_IPS; do
+        echo "Изоляция: $CAM (доступ только с $SERVER_IP)"
+        nft add rule inet maryba forward ip saddr != "$SERVER_IP" ip daddr "$CAM" log prefix '"maryba-blocked: "' drop
+        nft add rule inet maryba forward ip saddr "$CAM" ip daddr != "$SERVER_IP" drop
+    done
+
+    nft add rule inet maryba input log prefix '"maryba-refused: "' drop
+    echo ""
+    nft list ruleset
+}
+
 case $ACTION in
     install)
         install_project
@@ -224,6 +256,9 @@ case $ACTION in
         ;;
     logs)
         tail -f "$PROJECT_LOGFILE"
+        ;;
+    nftables)
+        setup_nftables "$@"
         ;;
     *)
         echo "Неверный параметр: $ACTION"

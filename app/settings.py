@@ -1,42 +1,47 @@
 import os
 
+
 class Config:
-    # Основная директория проекта
-    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # Путь к корню проекта
-
-    # Директории для шаблонов и статики
-    TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")  # Папка с шаблонами
-    STATIC_DIR = os.path.join(BASE_DIR, "static")  # Папка со статикой
-
-    # Поддиректории внутри static/
-    IMAGES_DIR = os.path.join(STATIC_DIR, "images")  # Папка с изображениями
-    VIDEOS_DIR = os.path.join(STATIC_DIR, "videos")  # Папка с видео
-    TS_DIR = os.path.join(STATIC_DIR, "ts") # Папка с TS
-    JS_DIR = os.path.join(STATIC_DIR, "js")  # Папка с JS
-    STYLE_DIR = os.path.join(STATIC_DIR, "style")  # Папка с CSS
-
-    # Остальные ссылки
-    DATABASE = os.path.join(BASE_DIR, "users.db")  # Путь к базе данных
-    SESSION_SECRET = os.urandom(64)  # Секрет для сессий
-    SECURITY_KEY = os.urandom(16).hex()  # Секрет для регистрации
+    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
+    STATIC_DIR = os.path.join(BASE_DIR, "static")
+    IMAGES_DIR = os.path.join(STATIC_DIR, "images")
+    VIDEOS_DIR = os.path.join(STATIC_DIR, "videos")
+    JS_DIR = os.path.join(STATIC_DIR, "js")
+    DATABASE = os.path.join(BASE_DIR, "users.db")
+    SESSION_SECRET = "s8per-Secretk3y-jUr7-d0nt-K11l-m3"  # вместо os.urandom(32) чтобы на(до) защите(ы) не крашилась сессия
+    SECURITY_KEY = os.urandom(16).hex()
+    GPIO_PIN = 17
+    GPIO_CHIP = "/dev/gpiochip0"
+    RELAY_DURATION = 5
 
 
-# Данные для подключения к onvif камере
 class Camera:
-    ip = '192.168.2.92'
-    user = 'admin'
-    passwd = 'rubetek11'
-    rtsp_url = f"rtsp://{ip}:8554/Streaming/Channels/101"
+    source = "rtsp://10.0.0.1:8554/cam"
+    frame_width = 640
+    frame_height = 480
+    fps = 25
+    jpeg_quality = 80
+    buffer_duration = 60
+    recordings_dir = "static/recordings"
 
-    ffmpeg_process = None
-    streaming_active = False
-    camera_check_task = None
 
 class Reader:
-    device_name = os.popen('ls /dev/ | grep tty.usbmodem').read().strip() # Название устройства в системе (предположительно работает только на macos)
-    client_path = "./app/api/reader-software/client/proxmark3" # Путь до клиента считывателя (приложения для взаимодействия)
-    device_port = f"/dev/{device_name}" # Путь до считывателя
+    device_port = "/dev/ttyACM0"
+    value_block = 4
+    key = "FFFFFFFFFFFF"
+    # можно легко добавить динамическую перезапись секторов для увеличения времени требуемого на копирование с устройств вроде flipper zero
+    # proxmark3 все еще легко их прочитает
+
+
+class Anomaly:
+    enable = True
+    interval = 10
+    single_reader = True
+    max_warnings = 5
+
 
 config = Config()
-onvif = Camera()
+camera = Camera()
 reader = Reader()
+anomaly = Anomaly()
